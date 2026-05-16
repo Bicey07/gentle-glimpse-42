@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
@@ -8,15 +9,44 @@ export const Route = createFileRoute("/me")({
 });
 
 function MePage() {
+  // Select stable references only — deriving new arrays/objects inside
+  // useStore selectors triggers React error #185 (infinite re-render).
   const me = useStore((s) => s.me);
-  const data = useStore((s) => personEntriesFromStore(s, "me"));
-  const traces = useStore((s) =>
-    s.traces.filter((t) => t.personId === "me").slice(0, 6),
-  );
-  const r = me.recent;
+  const allBooks = useStore((s) => s.books);
+  const allMovies = useStore((s) => s.movies);
+  const allSentences = useStore((s) => s.sentences);
+  const allImages = useStore((s) => s.images);
+  const allTraces = useStore((s) => s.traces);
 
-  const publicSentences = data.sentences.filter((s) => s.visibility !== "self");
-  const privateSentences = data.sentences.filter((s) => s.visibility === "self");
+  const data = useMemo(
+    () =>
+      personEntriesFromStore(
+        { books: allBooks, movies: allMovies, sentences: allSentences, images: allImages } as never,
+        "me",
+      ),
+    [allBooks, allMovies, allSentences, allImages],
+  );
+  const traces = useMemo(
+    () => (allTraces ?? []).filter((t) => t.personId === "me").slice(0, 6),
+    [allTraces],
+  );
+
+  const r = me?.recent ?? { mood: "", sentence: "" };
+
+  const books = books ?? [];
+  const movies = movies ?? [];
+  const images = images ?? [];
+  const sentences = sentences ?? [];
+  const publicSentences = sentences.filter((s) => s?.visibility !== "self");
+  const privateSentences = sentences.filter((s) => s?.visibility === "self");
+
+  if (!me) {
+    return (
+      <PageShell>
+        <p className="py-20 text-center text-sm text-[var(--quiet)]">房间正在准备…</p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -85,11 +115,11 @@ function MePage() {
       {/* 书架 */}
       <section className="mb-12">
         <SectionTitle>书架</SectionTitle>
-        {data.books.length === 0 ? (
+        {books.length === 0 ? (
           <EmptyHint>架子上还空着。</EmptyHint>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {data.books.map((b) => (
+            {books.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
                 <img src={b.cover} alt={b.title} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
                 <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{b.title}》</div>
@@ -103,13 +133,13 @@ function MePage() {
       {/* 影像 */}
       <section className="mb-12">
         <SectionTitle>影像</SectionTitle>
-        {data.movies.length === 0 && data.images.length === 0 ? (
+        {movies.length === 0 && images.length === 0 ? (
           <EmptyHint>还没看过什么。</EmptyHint>
         ) : (
           <div className="space-y-5">
-            {data.movies.length > 0 && (
+            {movies.length > 0 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {data.movies.map((m) => (
+                {movies.map((m) => (
                   <div key={m.id} className="w-36 shrink-0">
                     <img src={m.cover} alt={m.title} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
                     <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{m.title}》</div>
@@ -118,9 +148,9 @@ function MePage() {
                 ))}
               </div>
             )}
-            {data.images.length > 0 && (
+            {images.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
-                {data.images.map((i) => (
+                {images.map((i) => (
                   <img
                     key={i.id}
                     src={i.url}
