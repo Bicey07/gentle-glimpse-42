@@ -40,9 +40,9 @@ function AddPage() {
   return (
     <PageShell>
       <header className="mb-8">
-        <div className="text-xs tracking-[0.2em] text-[var(--quiet)]">ADD</div>
+        <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Add</div>
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">
-          今天想留下什么？
+          在自己的房间里留下一点痕迹。
         </h1>
       </header>
 
