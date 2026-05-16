@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
@@ -8,15 +9,44 @@ export const Route = createFileRoute("/me")({
 });
 
 function MePage() {
+  // Select stable references only — deriving new arrays/objects inside
+  // useStore selectors triggers React error #185 (infinite re-render).
   const me = useStore((s) => s.me);
-  const data = useStore((s) => personEntriesFromStore(s, "me"));
-  const traces = useStore((s) =>
-    s.traces.filter((t) => t.personId === "me").slice(0, 6),
-  );
-  const r = me.recent;
+  const allBooks = useStore((s) => s.books);
+  const allMovies = useStore((s) => s.movies);
+  const allSentences = useStore((s) => s.sentences);
+  const allImages = useStore((s) => s.images);
+  const allTraces = useStore((s) => s.traces);
 
-  const publicSentences = data.sentences.filter((s) => s.visibility !== "self");
-  const privateSentences = data.sentences.filter((s) => s.visibility === "self");
+  const data = useMemo(
+    () =>
+      personEntriesFromStore(
+        { books: allBooks, movies: allMovies, sentences: allSentences, images: allImages } as never,
+        "me",
+      ),
+    [allBooks, allMovies, allSentences, allImages],
+  );
+  const traces = useMemo(
+    () => (allTraces ?? []).filter((t) => t.personId === "me").slice(0, 6),
+    [allTraces],
+  );
+
+  const r = me?.recent ?? { mood: "", sentence: "" };
+
+  const books = data.books ?? [];
+  const movies = data.movies ?? [];
+  const images = data.images ?? [];
+  const sentences = data.sentences ?? [];
+  const publicSentences = sentences.filter((s) => s?.visibility !== "self");
+  const privateSentences = sentences.filter((s) => s?.visibility === "self");
+
+  if (!me) {
+    return (
+      <PageShell>
+        <p className="py-20 text-center text-sm text-[var(--quiet)]">房间正在准备…</p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
