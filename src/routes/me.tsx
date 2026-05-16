@@ -33,10 +33,10 @@ function MePage() {
 
   const r = me?.recent ?? { mood: "", sentence: "" };
 
-  const books = data.books ?? [];
-  const movies = data.movies ?? [];
-  const images = data.images ?? [];
-  const sentences = data.sentences ?? [];
+  const books = books ?? [];
+  const movies = movies ?? [];
+  const images = images ?? [];
+  const sentences = sentences ?? [];
   const publicSentences = sentences.filter((s) => s?.visibility !== "self");
   const privateSentences = sentences.filter((s) => s?.visibility === "self");
 
@@ -115,11 +115,11 @@ function MePage() {
       {/* 书架 */}
       <section className="mb-12">
         <SectionTitle>书架</SectionTitle>
-        {data.books.length === 0 ? (
+        {books.length === 0 ? (
           <EmptyHint>架子上还空着。</EmptyHint>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {data.books.map((b) => (
+            {books.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
                 <img src={b.cover} alt={b.title} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
                 <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{b.title}》</div>
@@ -133,13 +133,13 @@ function MePage() {
       {/* 影像 */}
       <section className="mb-12">
         <SectionTitle>影像</SectionTitle>
-        {data.movies.length === 0 && data.images.length === 0 ? (
+        {movies.length === 0 && images.length === 0 ? (
           <EmptyHint>还没看过什么。</EmptyHint>
         ) : (
           <div className="space-y-5">
-            {data.movies.length > 0 && (
+            {movies.length > 0 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {data.movies.map((m) => (
+                {movies.map((m) => (
                   <div key={m.id} className="w-36 shrink-0">
                     <img src={m.cover} alt={m.title} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
                     <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{m.title}》</div>
@@ -148,9 +148,9 @@ function MePage() {
                 ))}
               </div>
             )}
-            {data.images.length > 0 && (
+            {images.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
-                {data.images.map((i) => (
+                {images.map((i) => (
                   <img
                     key={i.id}
                     src={i.url}
