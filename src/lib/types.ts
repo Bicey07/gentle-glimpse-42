@@ -1,53 +1,60 @@
-export type PostType = "sentence" | "image" | "book" | "movie" | "status";
-
-export interface Friend {
+export interface Person {
   id: string;
   name: string;
-  avatar: string; // initial or color seed
   bio: string;
-  color: string; // hex for avatar bg
+  color: string; // hex/CSS color
+  recent: SpaceSummary;
 }
 
-export interface BasePost {
+export interface SpaceSummary {
+  mood: string;          // 本周状态：平静 / 想念 / 在恢复 ...
+  reading?: { title: string; author: string };
+  watching?: { title: string; director: string };
+  sentence?: string;     // 一句生活痕迹
+}
+
+export interface Room {
   id: string;
-  authorId: string;
-  createdAt: string; // ISO
-  type: PostType;
-  replies?: { author: string; text: string }[];
+  name: string;
+  description: string;
+  color: string;       // 房间色块
+  presence: string;    // 「几个人在这里」类的模糊描述
 }
 
-export interface SentencePost extends BasePost {
-  type: "sentence";
-  text: string;
+export interface Trace {
+  id: string;
+  personId: string;
+  verb: string;        // 留下了一句话 / 收藏了一本书 / 留下了一张照片
+  detail?: string;     // 引用片段，可选
 }
-export interface ImagePost extends BasePost {
-  type: "image";
-  imageUrl: string;
-  caption?: string;
-}
-export interface BookPost extends BasePost {
-  type: "book";
+
+export interface BookEntry {
+  id: string;
+  personId: string;
   title: string;
   author: string;
   cover: string;
   note?: string;
 }
-export interface MoviePost extends BasePost {
-  type: "movie";
+
+export interface MovieEntry {
+  id: string;
+  personId: string;
   title: string;
   director: string;
   cover: string;
   note?: string;
 }
-export interface StatusPost extends BasePost {
-  type: "status";
-  mood: string; // 平静 / 想念 / 在恢复 ...
-  note?: string;
+
+export interface SentenceEntry {
+  id: string;
+  personId: string;
+  text: string;
 }
 
-export type Post =
-  | SentencePost
-  | ImagePost
-  | BookPost
-  | MoviePost
-  | StatusPost;
+export interface ImageEntry {
+  id: string;
+  personId: string;
+  url: string;
+  caption?: string;
+}
