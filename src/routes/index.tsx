@@ -23,7 +23,7 @@ const quickActions = [
 function SpacePage() {
   const me = useStore((s) => s.me);
   const friends = useStore((s) => s.friends);
-  const rooms = useStore((s) => s.rooms ?? []);
+  const rooms: Room[] = allRooms;
   const traces = useStore((s) => s.traces);
 
   const featuredFriends = friends.slice(0, 4);
