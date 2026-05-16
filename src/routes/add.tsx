@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import type { PostType } from "../lib/types";
+type PostType = "sentence" | "image" | "book" | "movie" | "status";
 
 export const Route = createFileRoute("/add")({
   component: AddPage,
