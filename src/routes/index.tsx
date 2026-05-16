@@ -6,6 +6,8 @@ import { RoomCard } from "../components/RoomCard";
 import { TraceLine } from "../components/TraceLine";
 import { SectionTitle } from "../components/SectionTitle";
 import { useStore } from "../lib/store";
+import { rooms as allRooms } from "../data/mockData";
+import type { Room } from "../lib/types";
 
 export const Route = createFileRoute("/")({
   component: SpacePage,
