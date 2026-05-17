@@ -7,10 +7,14 @@ export interface Person {
 }
 
 export interface SpaceSummary {
-  mood: string;          // 本周状态：平静 / 想念 / 在恢复 ...
+  mood?: string;          // 本周状态：平静 / 想念 / 在恢复 ...
   reading?: { title: string; author: string };
   watching?: { title: string; director: string };
+  listening?: { title: string; artist?: string };  // 一首歌 / 在听
   sentence?: string;     // 一句生活痕迹
+  imageUrl?: string;     // 一张图
+  weekPlan?: string;     // 本周想做的一件事
+  freeDays?: string[];   // 可能有空的日子，比如 ["周六下午", "周日"]
 }
 
 export interface Room {
