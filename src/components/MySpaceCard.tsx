@@ -21,7 +21,7 @@ export function MySpaceCard({ person }: { person: Person }) {
       </div>
 
       <dl className="space-y-3 text-[14px]">
-        <Row label="本周">{r.mood}</Row>
+        {r.mood && <Row label="本周">{r.mood}</Row>}
         {r.reading && (
           <Row label="在读">
             《{r.reading.title}》<span className="text-[var(--quiet)]"> · {r.reading.author}</span>

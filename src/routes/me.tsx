@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
+import { WeekNotes } from "../components/WeekNotes";
 import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/me")({
@@ -94,6 +95,16 @@ function MePage() {
             )}
           </Field>
         </div>
+      </section>
+
+      <section className="mb-12">
+        <WeekNotes
+          mood={recent.mood}
+          wish={recent.weekPlan}
+          freeDays={recent.freeDays}
+          traces={traces.slice(0, 3).map((t) => `${t.verb ?? ""}${t.detail ? "  " + t.detail : ""}`)}
+          footer="不是日历，不是打卡。只是这一周可能的样子。"
+        />
       </section>
 
       <section className="mb-12">
