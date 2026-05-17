@@ -1,8 +1,40 @@
 import { Link } from "@tanstack/react-router";
 import type { Person } from "../lib/types";
 
+type Line = { label: string; value: React.ReactNode; key: string };
+
 export function FriendSpaceCard({ person }: { person: Person }) {
-  const r = person.recent;
+  const r = person.recent ?? {};
+
+  // 按优先级收集真实存在的内容，最多 3 条
+  const lines: Line[] = [];
+  if (r.mood) lines.push({ key: "mood", label: "本周", value: r.mood });
+  if (r.sentence)
+    lines.push({
+      key: "sentence",
+      label: "写了",
+      value: (
+        <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
+      ),
+    });
+  if (r.reading)
+    lines.push({ key: "reading", label: "在读", value: `《${r.reading.title}》` });
+  if (r.watching)
+    lines.push({ key: "watching", label: "在看", value: `《${r.watching.title}》` });
+  if (r.listening)
+    lines.push({
+      key: "listening",
+      label: "在听",
+      value: r.listening.artist
+        ? `${r.listening.title} · ${r.listening.artist}`
+        : r.listening.title,
+    });
+  if (r.weekPlan)
+    lines.push({ key: "plan", label: "想做", value: r.weekPlan });
+
+  const visible = lines.slice(0, 3);
+  const hasImage = Boolean(r.imageUrl);
+
   return (
     <Link
       to="/friend/$id"
@@ -18,29 +50,28 @@ export function FriendSpaceCard({ person }: { person: Person }) {
         />
       </div>
 
-      <div className="space-y-2 text-[13px] leading-relaxed text-[var(--ink)]/85">
-        <div>
-          <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">本周</span>
-          {r.mood}
-        </div>
-        {r.reading && (
-          <div className="truncate">
-            <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">在读</span>
-            《{r.reading.title}》
-          </div>
-        )}
-        {r.watching && (
-          <div className="truncate">
-            <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">在看</span>
-            《{r.watching.title}》
-          </div>
-        )}
-      </div>
+      {hasImage && (
+        <img
+          src={r.imageUrl}
+          alt="一张图"
+          className="mb-3 h-24 w-full rounded-lg object-cover opacity-90"
+          loading="lazy"
+        />
+      )}
 
-      {r.sentence && (
-        <p className="mt-4 border-t border-[var(--border)] pt-3 font-serif text-[13px] italic text-[var(--ink)]/80 leading-relaxed line-clamp-3">
-          「{r.sentence}」
-        </p>
+      {visible.length === 0 ? (
+        <p className="text-[12px] text-[var(--quiet)]">最近还没留下什么。</p>
+      ) : (
+        <div className="space-y-2 text-[13px] leading-relaxed text-[var(--ink)]/85">
+          {visible.map((l) => (
+            <div key={l.key} className="truncate">
+              <span className="mr-2 text-[10px] tracking-widest text-[var(--quiet)]">
+                {l.label}
+              </span>
+              {l.value}
+            </div>
+          ))}
+        </div>
       )}
     </Link>
   );
