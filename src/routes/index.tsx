@@ -37,7 +37,7 @@ function SpacePage() {
           QUIET · SPACE
         </div>
         <p className="mt-4 font-serif text-[19px] leading-[1.85] text-[var(--ink)]">
-          一个没有点赞和比较的生活空间。
+          今天，想留下些什么？
         </p>
       </header>
 
