@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
+import { WeekNotes } from "../components/WeekNotes";
 import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/me")({
