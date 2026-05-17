@@ -63,17 +63,42 @@ function FriendPage() {
       </header>
 
       {/* 本周摘要 */}
-      <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
+      <section className="mb-6 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="grid grid-cols-1 gap-4 text-[14px]">
-          <Field label="本周">{r.mood}</Field>
+          {r.mood && <Field label="本周">{r.mood}</Field>}
           {r.reading && <Field label="在读">《{r.reading.title}》 · {r.reading.author}</Field>}
           {r.watching && <Field label="在看">《{r.watching.title}》 · {r.watching.director}</Field>}
+          {r.listening && (
+            <Field label="在听">
+              {r.listening.title}
+              {r.listening.artist && <span className="text-[var(--quiet)]"> · {r.listening.artist}</span>}
+            </Field>
+          )}
           {r.sentence && (
             <Field label="随记">
               <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
             </Field>
           )}
+          {!r.mood && !r.reading && !r.watching && !r.listening && !r.sentence && (
+            <p className="text-[12px] text-[var(--quiet)]">TA 最近还没留下什么。</p>
+          )}
         </div>
+      </section>
+
+      {/* Ta 的这一周 */}
+      <section className="mb-10">
+        <SectionTitle>Ta 的这一周</SectionTitle>
+        <WeekNotes
+          title="这一周"
+          mood={r.mood}
+          wish={r.weekPlan}
+          freeDays={r.freeDays}
+          footer={
+            r.freeDays && r.freeDays.length > 0
+              ? "TA 愿意被看到的空闲时间。"
+              : "只是一点节奏，不是邀约。"
+          }
+        />
       </section>
 
       {data.books.length > 0 && (
