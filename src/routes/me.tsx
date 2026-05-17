@@ -2,51 +2,58 @@ import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
-import { useStore, personEntriesFromStore } from "../lib/store";
+import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/me")({
   component: MePage,
 });
 
+const fallbackMe = {
+  name: "你",
+  bio: "在城里慢慢生活。",
+  recent: {
+    mood: "还没有更新",
+    reading: undefined as { title: string; author: string } | undefined,
+    watching: undefined as { title: string; director: string } | undefined,
+    sentence: undefined as string | undefined,
+  },
+};
+
 function MePage() {
-  // Select stable references only — deriving new arrays/objects inside
-  // useStore selectors triggers React error #185 (infinite re-render).
   const me = useStore((s) => s.me);
+  const allTraces = useStore((s) => s.traces);
   const allBooks = useStore((s) => s.books);
   const allMovies = useStore((s) => s.movies);
-  const allSentences = useStore((s) => s.sentences);
   const allImages = useStore((s) => s.images);
-  const allTraces = useStore((s) => s.traces);
+  const allSentences = useStore((s) => s.sentences);
 
-  const data = useMemo(
-    () =>
-      personEntriesFromStore(
-        { books: allBooks, movies: allMovies, sentences: allSentences, images: allImages } as never,
-        "me",
-      ),
-    [allBooks, allMovies, allSentences, allImages],
-  );
+  const person = me ?? fallbackMe;
+  const recent = person.recent ?? fallbackMe.recent;
+
   const traces = useMemo(
-    () => (allTraces ?? []).filter((t) => t.personId === "me").slice(0, 6),
+    () => safeArray(allTraces).filter((t) => t?.personId === "me").slice(0, 6),
     [allTraces],
   );
-
-  const r = me?.recent ?? { mood: "", sentence: "" };
-
-  const books = books ?? [];
-  const movies = movies ?? [];
-  const images = images ?? [];
-  const sentences = sentences ?? [];
-  const publicSentences = sentences.filter((s) => s?.visibility !== "self");
-  const privateSentences = sentences.filter((s) => s?.visibility === "self");
-
-  if (!me) {
-    return (
-      <PageShell>
-        <p className="py-20 text-center text-sm text-[var(--quiet)]">房间正在准备…</p>
-      </PageShell>
-    );
-  }
+  const bookshelf = useMemo(
+    () => safeArray(allBooks).filter((b) => b?.personId === "me"),
+    [allBooks],
+  );
+  const films = useMemo(
+    () => safeArray(allMovies).filter((m) => m?.personId === "me"),
+    [allMovies],
+  );
+  const images = useMemo(
+    () => safeArray(allImages).filter((i) => i?.personId === "me"),
+    [allImages],
+  );
+  const privateNotes = useMemo(
+    () => safeArray(allSentences).filter((s) => s?.personId === "me" && s?.visibility === "self"),
+    [allSentences],
+  );
+  const sharedNotes = useMemo(
+    () => safeArray(allSentences).filter((s) => s?.personId === "me" && s?.visibility !== "self"),
+    [allSentences],
+  );
 
   return (
     <PageShell>
@@ -56,11 +63,10 @@ function MePage() {
 
       <header className="mb-10">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">My Space</div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{me.name}的房间</h1>
-        <p className="mt-1 text-sm text-[var(--quiet)]">{me.bio}</p>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">你的房间</h1>
+        <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio || "这里可以慢慢放下生活的痕迹。"}</p>
       </header>
 
-      {/* 本周状态 */}
       <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-[10px] tracking-widest text-[var(--quiet)]">本周</span>
@@ -73,18 +79,23 @@ function MePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-4 text-[14px]">
-          <Field label="心情">{r.mood}</Field>
-          {r.reading && <Field label="在读">《{r.reading.title}》 · {r.reading.author}</Field>}
-          {r.watching && <Field label="在看">《{r.watching.title}》 · {r.watching.director}</Field>}
-          {r.sentence && (
-            <Field label="随记">
-              <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
-            </Field>
-          )}
+          <Field label="心情">{recent.mood || "还没有写下本周状态"}</Field>
+          <Field label="在读">
+            {recent.reading ? `《${recent.reading.title}》 · ${recent.reading.author}` : "还没有放入书架"}
+          </Field>
+          <Field label="在看">
+            {recent.watching ? `《${recent.watching.title}》 · ${recent.watching.director}` : "还没有记录影像"}
+          </Field>
+          <Field label="随记">
+            {recent.sentence ? (
+              <span className="font-serif italic text-[var(--ink)]/85">「{recent.sentence}」</span>
+            ) : (
+              "今天也可以什么都不写"
+            )}
+          </Field>
         </div>
       </section>
 
-      {/* 最近留下的痕迹 */}
       <section className="mb-12">
         <SectionTitle
           aside={
@@ -93,17 +104,17 @@ function MePage() {
             </Link>
           }
         >
-          最近留下
+          最近痕迹
         </SectionTitle>
         {traces.length === 0 ? (
-          <EmptyHint>这周还很安静。</EmptyHint>
+          <EmptyHint>这里还没有新的痕迹。</EmptyHint>
         ) : (
           <ul className="space-y-2 text-[13px] text-[var(--ink)]/80">
             {traces.map((t) => (
               <li key={t.id} className="flex gap-3 border-b border-[var(--border)] py-2">
                 <span className="text-[var(--quiet)]">·</span>
                 <span>
-                  {t.verb}
+                  {t.verb || "留下了一点生活痕迹"}
                   {t.detail && <span className="text-[var(--quiet)]">  {t.detail}</span>}
                 </span>
               </li>
@@ -112,38 +123,36 @@ function MePage() {
         )}
       </section>
 
-      {/* 书架 */}
       <section className="mb-12">
         <SectionTitle>书架</SectionTitle>
-        {books.length === 0 ? (
+        {bookshelf.length === 0 ? (
           <EmptyHint>架子上还空着。</EmptyHint>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {books.map((b) => (
+            {bookshelf.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
-                <img src={b.cover} alt={b.title} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
-                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{b.title}》</div>
-                <div className="text-[11px] text-[var(--quiet)] truncate">{b.author}</div>
+                <img src={b.cover} alt={b.title || "书"} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
+                <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">《{b.title || "未命名"}》</div>
+                <div className="truncate text-[11px] text-[var(--quiet)]">{b.author || "—"}</div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* 影像 */}
       <section className="mb-12">
         <SectionTitle>影像</SectionTitle>
-        {movies.length === 0 && images.length === 0 ? (
-          <EmptyHint>还没看过什么。</EmptyHint>
+        {films.length === 0 && images.length === 0 ? (
+          <EmptyHint>还没有记录影像。</EmptyHint>
         ) : (
           <div className="space-y-5">
-            {movies.length > 0 && (
+            {films.length > 0 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {movies.map((m) => (
+                {films.map((m) => (
                   <div key={m.id} className="w-36 shrink-0">
-                    <img src={m.cover} alt={m.title} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
-                    <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{m.title}》</div>
-                    <div className="text-[11px] text-[var(--quiet)] truncate">{m.director}</div>
+                    <img src={m.cover} alt={m.title || "电影"} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
+                    <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">《{m.title || "未命名"}》</div>
+                    <div className="truncate text-[11px] text-[var(--quiet)]">{m.director || "—"}</div>
                   </div>
                 ))}
               </div>
@@ -154,7 +163,7 @@ function MePage() {
                   <img
                     key={i.id}
                     src={i.url}
-                    alt={i.caption ?? ""}
+                    alt={i.caption || "生活照片"}
                     className="aspect-square w-full rounded-lg object-cover"
                     loading="lazy"
                   />
@@ -165,36 +174,34 @@ function MePage() {
         )}
       </section>
 
-      {/* 公开随记 */}
       <section className="mb-12">
         <SectionTitle aside={<span>Friends 可见</span>}>随记</SectionTitle>
-        {publicSentences.length === 0 ? (
+        {sharedNotes.length === 0 ? (
           <EmptyHint>还没有写下什么。</EmptyHint>
         ) : (
           <div className="space-y-4">
-            {publicSentences.map((s) => (
-              <p key={s.id} className="font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90 border-l-2 border-[var(--border)] pl-4">
-                {s.text}
+            {sharedNotes.map((s) => (
+              <p key={s.id} className="border-l-2 border-[var(--border)] pl-4 font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90">
+                {s.text || "一点安静的记录。"}
               </p>
             ))}
           </div>
         )}
       </section>
 
-      {/* 私密随记 */}
       <section className="mb-12">
         <SectionTitle aside={<span>Only me</span>}>私密随记</SectionTitle>
-        {privateSentences.length === 0 ? (
+        {privateNotes.length === 0 ? (
           <EmptyHint>这里留给你自己。</EmptyHint>
         ) : (
           <div className="space-y-4">
-            {privateSentences.map((s) => (
+            {privateNotes.map((s) => (
               <p
                 key={s.id}
-                className="font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90 border-l-2 pl-4"
+                className="border-l-2 pl-4 font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90"
                 style={{ borderColor: "color-mix(in oklab, var(--sage) 40%, var(--paper))" }}
               >
-                {s.text}
+                {s.text || "一点只给自己的记录。"}
               </p>
             ))}
           </div>
@@ -204,11 +211,15 @@ function MePage() {
   );
 }
 
+function safeArray<T>(value: T[] | undefined | null): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <span className="w-10 shrink-0 text-[11px] tracking-widest text-[var(--quiet)] pt-0.5">{label}</span>
-      <span className="flex-1 text-[var(--ink)]/90 leading-relaxed">{children}</span>
+      <span className="w-10 shrink-0 pt-0.5 text-[11px] tracking-widest text-[var(--quiet)]">{label}</span>
+      <span className="flex-1 leading-relaxed text-[var(--ink)]/90">{children}</span>
     </div>
   );
 }
