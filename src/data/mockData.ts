@@ -18,6 +18,8 @@ export const me: Person = {
     reading: { title: "枕草子", author: "清少纳言" },
     watching: { title: "小森林", director: "森淳一" },
     sentence: "把窗户开了一会儿，让风进来。",
+    weekPlan: "去一次旧书店",
+    freeDays: ["周六下午", "周日整天"],
   },
 };
 
@@ -29,8 +31,8 @@ export const friends: Person[] = [
     color: "#C9D3DE",
     recent: {
       mood: "平静",
-      reading: { title: "夜航西飞", author: "柏瑞尔·马卡姆" },
       sentence: "下午的光照到桌角，什么都没有发生，也很好。",
+      weekPlan: "想去附近的河边走走",
     },
   },
   {
@@ -40,7 +42,7 @@ export const friends: Person[] = [
     color: "#D7C9B8",
     recent: {
       mood: "想念",
-      watching: { title: "海街日记", director: "是枝裕和" },
+      imageUrl: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=70",
       sentence: "今天的窗外。",
     },
   },
@@ -50,9 +52,8 @@ export const friends: Person[] = [
     bio: "在郊外做木工。",
     color: "#B8C9B0",
     recent: {
-      mood: "缓慢",
       reading: { title: "瓦尔登湖", author: "梭罗" },
-      sentence: "锯木头的声音，像一种很慢的呼吸。",
+      listening: { title: "雨声", artist: "环境音" },
     },
   },
   {
@@ -63,7 +64,7 @@ export const friends: Person[] = [
     recent: {
       mood: "明亮",
       watching: { title: "海上钢琴师", director: "托纳多雷" },
-      sentence: "走了很远的路才回到家。",
+      freeDays: ["周五晚上"],
     },
   },
   {
@@ -73,7 +74,6 @@ export const friends: Person[] = [
     color: "#D6C2C2",
     recent: {
       mood: "有点累",
-      reading: { title: "局外人", author: "加缪" },
       sentence: "夜里出门走了一会儿。",
     },
   },
@@ -83,8 +83,9 @@ export const friends: Person[] = [
     bio: "做饭，写日记。",
     color: "#BFD0C8",
     recent: {
-      mood: "平静",
-      sentence: "今天给自己煮了一碗面，加了一个荷包蛋。",
+      listening: { title: "Moon River", artist: "Frank Ocean" },
+      weekPlan: "做一次新菜",
+      freeDays: ["周日中午"],
     },
   },
 ];
