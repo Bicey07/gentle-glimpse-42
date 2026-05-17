@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
+import { WeekNotes } from "../components/WeekNotes";
 import { findPerson } from "../data/mockData";
 import { actions, useStore, personEntriesFromStore } from "../lib/store";
 
