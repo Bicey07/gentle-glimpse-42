@@ -4,7 +4,7 @@ import type { Room } from "../lib/types";
 export function RoomCard({ room }: { room: Room }) {
   return (
     <Link
-      to="/room/$id"
+      to="/rooms/$id"
       params={{ id: room.id }}
       className="group flex items-center gap-4 border-b border-[var(--border)] py-4 transition-opacity hover:opacity-80"
     >
