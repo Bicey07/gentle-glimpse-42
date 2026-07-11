@@ -5,14 +5,13 @@ import { SectionTitle } from "../components/SectionTitle";
 import { rooms, friends, me } from "../data/mockData";
 import { actions, useStore } from "../lib/store";
 
-export const Route = createFileRoute("/room/$id")({
+export const Route = createFileRoute("/rooms/$id")({
   component: RoomPage,
 });
 
-// Per-room 「几个人」and「大家的时间」atmospherics.
 const roomPeople: Record<string, string[]> = {
-  tokyo: ["林一", "阿野", "小满"],
-  exhibition: ["青羽", "林一", "安安"],
+  "tokyo-life": ["林一", "阿野", "小满"],
+  "weekend-exhibition": ["青羽", "林一", "安安"],
   reading: ["阿野", "木子"],
   morning: ["安安", "小满"],
   "night-writers": ["木子", "林一"],
@@ -21,9 +20,17 @@ const roomPeople: Record<string, string[]> = {
 function RoomPage() {
   const { id } = Route.useParams();
   const room = rooms.find((r) => r.id === id);
-  const roomNotes = useStore((s) =>
-    s.roomNotes.filter((n) => n.roomId === id).sort((a, b) => b.at - a.at),
+
+  // Select the whole array (stable ref); derive filtered list in useMemo.
+  const allNotes = useStore((s) => s.roomNotes);
+  const roomNotes = useMemo(
+    () =>
+      (allNotes ?? [])
+        .filter((n) => n.roomId === id)
+        .sort((a, b) => b.at - a.at),
+    [allNotes, id],
   );
+
   const [text, setText] = useState("");
   const [sent, setSent] = useState(false);
 
@@ -41,16 +48,16 @@ function RoomPage() {
   if (!room) {
     return (
       <PageShell>
-        <p className="py-20 text-center text-sm text-[var(--quiet)]">这个房间还不存在。</p>
-        <div className="text-center">
-          <Link to="/rooms" className="text-sm text-[var(--bluegrey)]">回到 Rooms</Link>
-        </div>
+        <Link to="/rooms" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
+          ← Rooms
+        </Link>
+        <p className="py-20 text-center font-serif text-[15px] text-[var(--quiet)]">房间不存在。</p>
       </PageShell>
     );
   }
 
-  const people = roomPeople[room.id] ?? ["几位朋友"];
-  const isExhibition = room.id === "exhibition";
+  const people = roomPeople[room.id] ?? [];
+  const isExhibition = room.id === "weekend-exhibition";
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +86,7 @@ function RoomPage() {
       <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="mb-3 text-[10px] tracking-[0.28em] text-[var(--quiet)]">这里的人</div>
         <div className="flex flex-wrap gap-2">
-          {people.map((n) => (
+          {(people.length ? people : ["几位朋友"]).map((n) => (
             <span
               key={n}
               className="rounded-full border border-[var(--border)] bg-[var(--paper)] px-3 py-1 text-[12px] text-[var(--ink)]/80"

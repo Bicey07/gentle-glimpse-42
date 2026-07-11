@@ -98,14 +98,14 @@ export function findPerson(id: string): Person | undefined {
 
 export const rooms: Room[] = [
   {
-    id: "exhibition",
+    id: "weekend-exhibition",
     name: "周末有人想去展览",
     description: "看画，发呆，慢慢走。",
     color: "#C9D3DE",
     presence: "几个人在这里",
   },
   {
-    id: "tokyo",
+    id: "tokyo-life",
     name: "东京生活",
     description: "在另一座城市里慢慢生活。",
     color: "#D7C9B8",
