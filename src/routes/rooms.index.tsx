@@ -4,7 +4,7 @@ import { RoomCard } from "../components/RoomCard";
 import { SectionTitle } from "../components/SectionTitle";
 import { rooms, friends, me } from "../data/mockData";
 
-export const Route = createFileRoute("/rooms")({
+export const Route = createFileRoute("/rooms/")({
   component: RoomsPage,
 });
 
