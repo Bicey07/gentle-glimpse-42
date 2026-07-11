@@ -6,7 +6,7 @@ import { WeekNotes } from "../components/WeekNotes";
 import { findPerson } from "../data/mockData";
 import { actions, useStore, personEntriesFromStore } from "../lib/store";
 
-export const Route = createFileRoute("/friend/$id")({
+export const Route = createFileRoute("/friends/$id")({
   component: FriendPage,
 });
 

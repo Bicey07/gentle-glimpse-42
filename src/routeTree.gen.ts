@@ -11,11 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as MeRouteImport } from './routes/me'
-import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as RoomIdRouteImport } from './routes/room.$id'
-import { Route as FriendIdRouteImport } from './routes/friend.$id'
+import { Route as FriendsIdRouteImport } from './routes/friends.$id'
 
 const RoomsRoute = RoomsRouteImport.update({
   id: '/rooms',
@@ -25,11 +25,6 @@ const RoomsRoute = RoomsRouteImport.update({
 const MeRoute = MeRouteImport.update({
   id: '/me',
   path: '/me',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FriendsRoute = FriendsRouteImport.update({
-  id: '/friends',
-  path: '/friends',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddRoute = AddRouteImport.update({
@@ -42,76 +37,88 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FriendsIndexRoute = FriendsIndexRouteImport.update({
+  id: '/friends/',
+  path: '/friends/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoomIdRoute = RoomIdRouteImport.update({
   id: '/room/$id',
   path: '/room/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FriendIdRoute = FriendIdRouteImport.update({
-  id: '/friend/$id',
-  path: '/friend/$id',
+const FriendsIdRoute = FriendsIdRouteImport.update({
+  id: '/friends/$id',
+  path: '/friends/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
-  '/friends': typeof FriendsRoute
   '/me': typeof MeRoute
   '/rooms': typeof RoomsRoute
-  '/friend/$id': typeof FriendIdRoute
+  '/friends/$id': typeof FriendsIdRoute
   '/room/$id': typeof RoomIdRoute
+  '/friends/': typeof FriendsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
-  '/friends': typeof FriendsRoute
   '/me': typeof MeRoute
   '/rooms': typeof RoomsRoute
-  '/friend/$id': typeof FriendIdRoute
+  '/friends/$id': typeof FriendsIdRoute
   '/room/$id': typeof RoomIdRoute
+  '/friends': typeof FriendsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/add': typeof AddRoute
-  '/friends': typeof FriendsRoute
   '/me': typeof MeRoute
   '/rooms': typeof RoomsRoute
-  '/friend/$id': typeof FriendIdRoute
+  '/friends/$id': typeof FriendsIdRoute
   '/room/$id': typeof RoomIdRoute
+  '/friends/': typeof FriendsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/add'
-    | '/friends'
     | '/me'
     | '/rooms'
-    | '/friend/$id'
+    | '/friends/$id'
     | '/room/$id'
+    | '/friends/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/add' | '/friends' | '/me' | '/rooms' | '/friend/$id' | '/room/$id'
+  to:
+    | '/'
+    | '/add'
+    | '/me'
+    | '/rooms'
+    | '/friends/$id'
+    | '/room/$id'
+    | '/friends'
   id:
     | '__root__'
     | '/'
     | '/add'
-    | '/friends'
     | '/me'
     | '/rooms'
-    | '/friend/$id'
+    | '/friends/$id'
     | '/room/$id'
+    | '/friends/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
-  FriendsRoute: typeof FriendsRoute
   MeRoute: typeof MeRoute
   RoomsRoute: typeof RoomsRoute
-  FriendIdRoute: typeof FriendIdRoute
+  FriendsIdRoute: typeof FriendsIdRoute
   RoomIdRoute: typeof RoomIdRoute
+  FriendsIndexRoute: typeof FriendsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -130,13 +137,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/friends': {
-      id: '/friends'
-      path: '/friends'
-      fullPath: '/friends'
-      preLoaderRoute: typeof FriendsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/add': {
       id: '/add'
       path: '/add'
@@ -151,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/friends/': {
+      id: '/friends/'
+      path: '/friends'
+      fullPath: '/friends/'
+      preLoaderRoute: typeof FriendsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/room/$id': {
       id: '/room/$id'
       path: '/room/$id'
@@ -158,11 +165,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/friend/$id': {
-      id: '/friend/$id'
-      path: '/friend/$id'
-      fullPath: '/friend/$id'
-      preLoaderRoute: typeof FriendIdRouteImport
+    '/friends/$id': {
+      id: '/friends/$id'
+      path: '/friends/$id'
+      fullPath: '/friends/$id'
+      preLoaderRoute: typeof FriendsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -171,22 +178,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddRoute: AddRoute,
-  FriendsRoute: FriendsRoute,
   MeRoute: MeRoute,
   RoomsRoute: RoomsRoute,
-  FriendIdRoute: FriendIdRoute,
+  FriendsIdRoute: FriendsIdRoute,
   RoomIdRoute: RoomIdRoute,
+  FriendsIndexRoute: FriendsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

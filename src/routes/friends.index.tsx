@@ -3,7 +3,7 @@ import { PageShell } from "../components/PageShell";
 import { FriendSpaceCard } from "../components/FriendSpaceCard";
 import { friends } from "../data/mockData";
 
-export const Route = createFileRoute("/friends")({
+export const Route = createFileRoute("/friends/")({
   component: FriendsPage,
 });
 
