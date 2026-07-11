@@ -21,7 +21,7 @@ export function TraceLine({ trace }: { trace: Trace }) {
     return <Link to="/me" className={cls}>{Inner}</Link>;
   }
   return (
-    <Link to="/friend/$id" params={{ id: person.id }} className={cls}>
+    <Link to="/friends/$id" params={{ id: person.id }} className={cls}>
       {Inner}
     </Link>
   );

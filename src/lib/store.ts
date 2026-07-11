@@ -21,8 +21,16 @@ export type Visibility = "self" | "friends";
 
 export interface Reply {
   id: string;
-  personId: string;   // 被回应的人
-  fromName: string;   // 谁回应（这里默认是"你"）
+  personId: string;
+  fromName: string;
+  text: string;
+  at: number;
+}
+
+export interface RoomNote {
+  id: string;
+  roomId: string;
+  fromName: string;
   text: string;
   at: number;
 }
@@ -36,9 +44,21 @@ interface State {
   images: (ImageEntry & { visibility?: Visibility })[];
   traces: Trace[];
   replies: Reply[];
+  roomNotes: RoomNote[];
 }
 
-let state: State = {
+const STORAGE_KEY = "quiet-space:v2";
+
+const seededRoomNotes: RoomNote[] = [
+  { id: "rn_seed1", roomId: "tokyo", fromName: "林一", text: "今天去了下北泽的旧书店，买到了一本很旧的诗集。", at: Date.now() - 1000 * 60 * 60 * 20 },
+  { id: "rn_seed2", roomId: "tokyo", fromName: "阿野", text: "早上的中目黑很安静，河边一个人在跑步。", at: Date.now() - 1000 * 60 * 60 * 8 },
+  { id: "rn_seed3", roomId: "tokyo", fromName: "小满", text: "在便利店买了一个饭团当晚饭，也很好。", at: Date.now() - 1000 * 60 * 60 * 2 },
+  { id: "rn_seed4", roomId: "exhibition", fromName: "青羽", text: "周六下午想去看那个安藤忠雄的展，一个人也可以。", at: Date.now() - 1000 * 60 * 60 * 30 },
+  { id: "rn_seed5", roomId: "exhibition", fromName: "林一", text: "如果那天下雨，展后可以喝杯咖啡。", at: Date.now() - 1000 * 60 * 60 * 12 },
+  { id: "rn_seed6", roomId: "exhibition", fromName: "安安", text: "我可能周日下午有空，也想去看看。", at: Date.now() - 1000 * 60 * 60 * 3 },
+];
+
+const initial: State = {
   me: { ...initialMe },
   friends: initialFriends.map((f) => ({ ...f })),
   books: [...initialBooks],
@@ -47,10 +67,44 @@ let state: State = {
   images: initialImages.map((i) => ({ ...i, visibility: "friends" as Visibility })),
   traces: [...initialTraces],
   replies: [],
+  roomNotes: seededRoomNotes,
 };
 
+function loadPersisted(): State {
+  if (typeof window === "undefined") return initial;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return initial;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return initial;
+    return {
+      ...initial,
+      ...parsed,
+      me: { ...initial.me, ...(parsed.me ?? {}), recent: { ...initial.me.recent, ...(parsed.me?.recent ?? {}) } },
+      friends: Array.isArray(parsed.friends) && parsed.friends.length ? parsed.friends : initial.friends,
+      books: Array.isArray(parsed.books) ? parsed.books : initial.books,
+      movies: Array.isArray(parsed.movies) ? parsed.movies : initial.movies,
+      sentences: Array.isArray(parsed.sentences) ? parsed.sentences : initial.sentences,
+      images: Array.isArray(parsed.images) ? parsed.images : initial.images,
+      traces: Array.isArray(parsed.traces) ? parsed.traces : initial.traces,
+      replies: Array.isArray(parsed.replies) ? parsed.replies : [],
+      roomNotes: Array.isArray(parsed.roomNotes) ? parsed.roomNotes : initial.roomNotes,
+    };
+  } catch {
+    try { window.localStorage.removeItem(STORAGE_KEY); } catch {}
+    return initial;
+  }
+}
+
+let state: State = loadPersisted();
+
 const listeners = new Set<() => void>();
+function persist() {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
 function emit() {
+  persist();
   listeners.forEach((l) => l());
 }
 function subscribe(cb: () => void) {
@@ -89,6 +143,8 @@ export const actions = {
     };
     if (visibility === "friends") {
       pushTrace({ personId: "me", verb: "留下了一句话", detail: text.trim() });
+    } else {
+      pushTrace({ personId: "me", verb: "写了一句只给自己的话" });
     }
     state = { ...state, me: { ...state.me, recent: { ...state.me.recent, sentence: text.trim() } } };
     emit();
@@ -156,6 +212,21 @@ export const actions = {
         ...state.replies,
       ],
     };
+    emit();
+  },
+  addRoomNote(roomId: string, text: string) {
+    if (!text.trim()) return;
+    state = {
+      ...state,
+      roomNotes: [
+        { id: uid("rn"), roomId, fromName: "你", text: text.trim(), at: Date.now() },
+        ...state.roomNotes,
+      ],
+    };
+    emit();
+  },
+  resetAll() {
+    state = initial;
     emit();
   },
 };

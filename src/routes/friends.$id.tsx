@@ -6,7 +6,7 @@ import { WeekNotes } from "../components/WeekNotes";
 import { findPerson } from "../data/mockData";
 import { actions, useStore, personEntriesFromStore } from "../lib/store";
 
-export const Route = createFileRoute("/friend/$id")({
+export const Route = createFileRoute("/friends/$id")({
   component: FriendPage,
 });
 
@@ -151,7 +151,7 @@ function FriendPage() {
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}
-            placeholder="留一句话，给 TA"
+            placeholder="留一句话"
             rows={2}
             className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 font-serif text-[15px] leading-relaxed outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
           />

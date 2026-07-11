@@ -37,7 +37,7 @@ export function FriendSpaceCard({ person }: { person: Person }) {
 
   return (
     <Link
-      to="/friend/$id"
+      to="/friends/$id"
       params={{ id: person.id }}
       className="group fade-in flex h-full flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-colors hover:border-[var(--bluegrey)]"
     >
