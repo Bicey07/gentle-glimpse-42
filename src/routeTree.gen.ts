@@ -43,9 +43,9 @@ const FriendsIndexRoute = FriendsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoomsIdRoute = RoomsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => RoomsRoute,
+  id: '/rooms/$id',
+  path: '/rooms/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsIdRoute = FriendsIdRouteImport.update({
   id: '/friends/$id',
@@ -116,6 +116,7 @@ export interface RootRouteChildren {
   AddRoute: typeof AddRoute
   MeRoute: typeof MeRoute
   FriendsIdRoute: typeof FriendsIdRoute
+  RoomsIdRoute: typeof RoomsIdRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
   RoomsIndexRoute: typeof RoomsIndexRoute
 }
@@ -159,10 +160,10 @@ declare module '@tanstack/react-router' {
     }
     '/rooms/$id': {
       id: '/rooms/$id'
-      path: '/$id'
+      path: '/rooms/$id'
       fullPath: '/rooms/$id'
       preLoaderRoute: typeof RoomsIdRouteImport
-      parentRoute: typeof RoomsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/friends/$id': {
       id: '/friends/$id'
@@ -179,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AddRoute: AddRoute,
   MeRoute: MeRoute,
   FriendsIdRoute: FriendsIdRoute,
+  RoomsIdRoute: RoomsIdRoute,
   FriendsIndexRoute: FriendsIndexRoute,
   RoomsIndexRoute: RoomsIndexRoute,
 }
