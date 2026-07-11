@@ -14,7 +14,7 @@ import { Route as MeRouteImport } from './routes/me'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
-import { Route as RoomIdRouteImport } from './routes/room.$id'
+import { Route as RoomsIdRouteImport } from './routes/rooms.$id'
 import { Route as FriendsIdRouteImport } from './routes/friends.$id'
 
 const RoomsRoute = RoomsRouteImport.update({
@@ -42,10 +42,10 @@ const FriendsIndexRoute = FriendsIndexRouteImport.update({
   path: '/friends/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoomIdRoute = RoomIdRouteImport.update({
-  id: '/room/$id',
-  path: '/room/$id',
-  getParentRoute: () => rootRouteImport,
+const RoomsIdRoute = RoomsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => RoomsRoute,
 } as any)
 const FriendsIdRoute = FriendsIdRouteImport.update({
   id: '/friends/$id',
@@ -57,18 +57,18 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/me': typeof MeRoute
-  '/rooms': typeof RoomsRoute
+  '/rooms': typeof RoomsRouteWithChildren
   '/friends/$id': typeof FriendsIdRoute
-  '/room/$id': typeof RoomIdRoute
+  '/rooms/$id': typeof RoomsIdRoute
   '/friends/': typeof FriendsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/me': typeof MeRoute
-  '/rooms': typeof RoomsRoute
+  '/rooms': typeof RoomsRouteWithChildren
   '/friends/$id': typeof FriendsIdRoute
-  '/room/$id': typeof RoomIdRoute
+  '/rooms/$id': typeof RoomsIdRoute
   '/friends': typeof FriendsIndexRoute
 }
 export interface FileRoutesById {
@@ -76,9 +76,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
   '/me': typeof MeRoute
-  '/rooms': typeof RoomsRoute
+  '/rooms': typeof RoomsRouteWithChildren
   '/friends/$id': typeof FriendsIdRoute
-  '/room/$id': typeof RoomIdRoute
+  '/rooms/$id': typeof RoomsIdRoute
   '/friends/': typeof FriendsIndexRoute
 }
 export interface FileRouteTypes {
@@ -89,7 +89,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/rooms'
     | '/friends/$id'
-    | '/room/$id'
+    | '/rooms/$id'
     | '/friends/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -98,7 +98,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/rooms'
     | '/friends/$id'
-    | '/room/$id'
+    | '/rooms/$id'
     | '/friends'
   id:
     | '__root__'
@@ -107,7 +107,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/rooms'
     | '/friends/$id'
-    | '/room/$id'
+    | '/rooms/$id'
     | '/friends/'
   fileRoutesById: FileRoutesById
 }
@@ -115,9 +115,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
   MeRoute: typeof MeRoute
-  RoomsRoute: typeof RoomsRoute
+  RoomsRoute: typeof RoomsRouteWithChildren
   FriendsIdRoute: typeof FriendsIdRoute
-  RoomIdRoute: typeof RoomIdRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
 }
 
@@ -158,12 +157,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FriendsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/room/$id': {
-      id: '/room/$id'
-      path: '/room/$id'
-      fullPath: '/room/$id'
-      preLoaderRoute: typeof RoomIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/rooms/$id': {
+      id: '/rooms/$id'
+      path: '/$id'
+      fullPath: '/rooms/$id'
+      preLoaderRoute: typeof RoomsIdRouteImport
+      parentRoute: typeof RoomsRoute
     }
     '/friends/$id': {
       id: '/friends/$id'
@@ -175,13 +174,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface RoomsRouteChildren {
+  RoomsIdRoute: typeof RoomsIdRoute
+}
+
+const RoomsRouteChildren: RoomsRouteChildren = {
+  RoomsIdRoute: RoomsIdRoute,
+}
+
+const RoomsRouteWithChildren = RoomsRoute._addFileChildren(RoomsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddRoute: AddRoute,
   MeRoute: MeRoute,
-  RoomsRoute: RoomsRoute,
+  RoomsRoute: RoomsRouteWithChildren,
   FriendsIdRoute: FriendsIdRoute,
-  RoomIdRoute: RoomIdRoute,
   FriendsIndexRoute: FriendsIndexRoute,
 }
 export const routeTree = rootRouteImport
