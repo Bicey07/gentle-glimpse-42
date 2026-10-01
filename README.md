@@ -1,86 +1,77 @@
-# Gentle Echoes
+# Quiet Space
 
-请帮我做一个网页 App 原型。
+> A calm, low-pressure place to leave small traces of life and be gently seen by people you trust.
 
-产品定位：
+Quiet Space is a social reflection prototype built around personal spaces, not feeds. It explores what online connection can feel like without likes, follower counts, rankings, or pressure to perform.
 
-一个没有点赞、没有比较的生活记录空间。
+## Problem
 
-用户可以留下生活痕迹，也可以被朋友温柔地看见。
+Most social products turn everyday life into content to be measured. Public metrics, algorithmic feeds, and polished posting conventions make small moments feel unworthy of sharing and make connection feel competitive.
 
-核心页面：
+Quiet Space asks a different question: what if a social product helped people stay lightly present in one another's lives without demanding attention or comparison?
 
-1. Home：朋友生活流
+## Core Loop
 
-2. Add：极轻发布入口
+1. Leave a small trace in your own space: a sentence, image, book, film, or weekly status.
+2. Choose whether that trace is for yourself or visible to friends.
+3. Visit a friend's space or a shared room to notice what is happening in their life.
+4. Respond with one gentle sentence when words feel useful.
 
-3. Me：我的个人空间
+## Current Prototype / Working Flows
 
-4. Friend Profile：朋友空间
+- A corridor-style home that summarizes your space, friends' spaces, shared rooms, and recent traces.
+- A lightweight add flow for a sentence, image URL, book, film, or weekly status, with self/friends visibility controls.
+- A personal space with a weekly snapshot, books, films, shared notes, and private notes.
+- A friends directory and individual friend spaces, including a prototype flow for leaving a private reply.
+- Shared rooms with room-specific notes and a gentle view of people's possible free time.
+- Seeded mock content plus same-browser persistence through `localStorage`.
 
-内容类型：
+## Product Principles
 
-- 一句话
+- No likes, follower counts, rankings, streaks, or trending content.
+- People are represented as spaces to visit, not profiles competing in a feed.
+- Small, unfinished moments are valid contributions.
+- Visibility should be explicit, understandable, and easy to control.
+- Calm interaction and emotional safety matter more than engagement volume.
 
-- 一张图
+## Current Stage
 
-- 一本书
+Quiet Space is a functional front-end prototype built with React, TanStack Start, Tailwind CSS, and Lovable. The main interaction paths work in a single browser, but all people and initial content are simulated.
 
-- 一部电影
+There is currently no authentication, database, real friend graph, media upload service, or real-time multi-user behavior. New prototype data is stored only in the browser's local storage.
 
-- 本周状态
+## Hacker House Build Goal
 
-产品规则：
+Turn the prototype into a small, testable multi-user MVP without losing its calm interaction model. The immediate goal is to add a minimal secure data layer, authentication and privacy boundaries, real friend and room membership, and a deployable mobile-ready experience, then validate the core loop with a small cohort.
 
-- 没有点赞
+Success is not maximizing time spent. It is learning whether lightweight traces help people feel more naturally present in one another's lives.
 
-- 没有粉丝数
+## Looking For
 
-- 没有排行榜
+- Full-stack collaborators who care about privacy-aware social systems.
+- Product and design partners interested in humane, low-pressure interaction models.
+- Early testers willing to evaluate emotional comfort and usefulness, not just engagement.
 
-- 没有热门推荐
+## Founder / Role
 
-- 只允许评论或一句话回应
-
-视觉风格：
-
-安静、温柔、低压力。
-
-不要像 Instagram，不要像小红书。
-
-颜色偏米白、灰蓝、淡绿。
-
-界面要像一个可以安静生活的空间。
-
-技术要求：
-
-先只做前端原型。
-
-使用假数据。
-
-不用登录。
-
-不用后端。
-
-用 React + Tailwind。
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/2cc86ce0-6410-480b-9751-7fc49dd77582).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+Solo founder leading product direction, interaction design, prototyping, and user discovery. Currently looking for technical collaborators who can help turn the prototype into a secure, testable product.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requirements: Node.js and npm.
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+git clone https://github.com/Bicey07/gentle-glimpse-42.git
+cd gentle-glimpse-42
+npm install
 npm run dev
 ```
+
+Useful commands:
+
+```bash
+npm run build
+npm run lint
+```
+
+This project is connected to Lovable. Changes pushed to `main` remain available in the Lovable editor.
