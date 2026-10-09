@@ -372,7 +372,7 @@ export function MemoryRoom({ name }: { name: string }) {
           <span className="mt-0.5 text-[var(--sage)]">●</span>
           <p>
             记忆正文会先在你的设备上加密。当前 Demo
-            只保存在本机；黑客松阶段将把加密内容放到链下，并在 Solana Devnet 记录时间与归属证明。
+            只保存在本机；开发阶段将把加密内容放到链下，并在 Solana Devnet 记录时间与归属证明。
           </p>
         </div>
         {notice && (
