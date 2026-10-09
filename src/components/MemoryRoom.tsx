@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 
 type Capsule = {
   id: string;
@@ -29,21 +28,104 @@ type AmbientAudio = {
 
 const STORAGE_KEY = "quiet-space:memory-capsules:v1";
 const SOLANA_RPC = "https://api.devnet.solana.com";
-const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+const SOLANA_WEB3_SCRIPT =
+  "https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js";
+const SOLANA_WEB3_INTEGRITY =
+  "sha384-I45YF+S0YGWIolUyTksLk9TNtTqaDgZg8e6T1OoBoJvvFmphqYNIPZw3Kl0TkZNN";
+const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+type SolanaPublicKey = {
+  toBase58: () => string;
+};
+
+type SolanaTransaction = {
+  feePayer?: SolanaPublicKey;
+  recentBlockhash?: string;
+  add: (instruction: unknown) => SolanaTransaction;
+};
+
+type SolanaWeb3 = {
+  Connection: new (
+    endpoint: string,
+    commitment: string,
+  ) => {
+    getLatestBlockhash: (commitment: string) => Promise<{
+      blockhash: string;
+      lastValidBlockHeight: number;
+    }>;
+    confirmTransaction: (
+      strategy: {
+        signature: string;
+        blockhash: string;
+        lastValidBlockHeight: number;
+      },
+      commitment: string,
+    ) => Promise<unknown>;
+  };
+  PublicKey: new (value: string) => SolanaPublicKey;
+  Transaction: new () => SolanaTransaction;
+  TransactionInstruction: new (options: {
+    keys: never[];
+    programId: SolanaPublicKey;
+    data: Uint8Array;
+  }) => unknown;
+};
+
 type SolanaProvider = {
   isPhantom?: boolean;
-  publicKey?: PublicKey;
-  connect: () => Promise<{ publicKey: PublicKey }>;
-  signAndSendTransaction: (transaction: Transaction) => Promise<{ signature: string }>;
+  publicKey?: SolanaPublicKey;
+  connect: () => Promise<{ publicKey: SolanaPublicKey }>;
+  signAndSendTransaction: (
+    transaction: SolanaTransaction,
+  ) => Promise<{ signature: string }>;
 };
 
 declare global {
   interface Window {
     solana?: SolanaProvider;
+    solanaWeb3?: SolanaWeb3;
   }
+}
+
+let solanaWeb3Promise: Promise<SolanaWeb3> | null = null;
+
+function loadSolanaWeb3() {
+  if (window.solanaWeb3) return Promise.resolve(window.solanaWeb3);
+  if (solanaWeb3Promise) return solanaWeb3Promise;
+
+  solanaWeb3Promise = new Promise<SolanaWeb3>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${SOLANA_WEB3_SCRIPT}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+
+    const finish = () => {
+      if (window.solanaWeb3) resolve(window.solanaWeb3);
+      else reject(new Error("SOLANA_WEB3_UNAVAILABLE"));
+    };
+
+    script.addEventListener("load", finish, { once: true });
+    script.addEventListener(
+      "error",
+      () => reject(new Error("SOLANA_WEB3_UNAVAILABLE")),
+      { once: true },
+    );
+
+    if (!existing) {
+      script.src = SOLANA_WEB3_SCRIPT;
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      script.integrity = SOLANA_WEB3_INTEGRITY;
+      document.head.appendChild(script);
+    }
+  }).catch((error) => {
+    solanaWeb3Promise = null;
+    throw error;
+  });
+
+  return solanaWeb3Promise;
 }
 
 function toBase64(bytes: Uint8Array) {
@@ -322,15 +404,16 @@ export function MemoryRoom({ name }: { name: string }) {
     setBusy(true);
     setNotice("");
     try {
+      const web3 = await loadSolanaWeb3();
       const { publicKey } = await provider.connect();
-      const connection = new Connection(SOLANA_RPC, "confirmed");
+      const connection = new web3.Connection(SOLANA_RPC, "confirmed");
       const latest = await connection.getLatestBlockhash("confirmed");
       const memo = `quiet-space:v1|${capsule.proof}|${capsule.createdAt}`;
-      const transaction = new Transaction().add(
-        new TransactionInstruction({
+      const transaction = new web3.Transaction().add(
+        new web3.TransactionInstruction({
           keys: [],
-          programId: MEMO_PROGRAM_ID,
-          data: encoder.encode(memo) as unknown as Buffer,
+          programId: new web3.PublicKey(MEMO_PROGRAM_ID),
+          data: encoder.encode(memo),
         }),
       );
       transaction.feePayer = publicKey;
