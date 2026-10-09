@@ -32,7 +32,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
 
@@ -82,8 +82,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Quiet Space · 安静的生活记录" },
       { name: "twitter:description", content: "一个没有点赞、没有比较的生活记录空间。" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/904a6a21-4e2d-424c-b23f-0c9403c27988/id-preview-1f3ee3f9--2cc86ce0-6410-480b-9751-7fc49dd77582.lovable.app-1778919846839.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/904a6a21-4e2d-424c-b23f-0c9403c27988/id-preview-1f3ee3f9--2cc86ce0-6410-480b-9751-7fc49dd77582.lovable.app-1778919846839.png" },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/904a6a21-4e2d-424c-b23f-0c9403c27988/id-preview-1f3ee3f9--2cc86ce0-6410-480b-9751-7fc49dd77582.lovable.app-1778919846839.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/904a6a21-4e2d-424c-b23f-0c9403c27988/id-preview-1f3ee3f9--2cc86ce0-6410-480b-9751-7fc49dd77582.lovable.app-1778919846839.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

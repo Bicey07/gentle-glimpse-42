@@ -46,11 +46,11 @@
   --radius: 1rem;
 
   /* Quiet palette in oklch */
-  --paper: oklch(0.965 0.012 85);          /* 米白 #F7F4EE */
-  --bluegrey: oklch(0.66 0.035 240);       /* 灰蓝 #8AA0B4 */
-  --sage: oklch(0.81 0.04 140);            /* 淡绿 #B8C9B0 */
-  --ink: oklch(0.32 0.012 60);             /* 暖灰墨 #3D3A35 */
-  --quiet: oklch(0.55 0.012 60);           /* 次要灰 */
+  --paper: oklch(0.965 0.012 85);
+  --bluegrey: oklch(0.66 0.035 240);
+  --sage: oklch(0.81 0.04 140);
+  --ink: oklch(0.32 0.012 60);
+  --quiet: oklch(0.55 0.012 60);
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -73,24 +73,85 @@
   --ring: var(--bluegrey);
 }
 
-.dark { color-scheme: light; }
+.dark {
+  color-scheme: light;
+}
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
-  .font-serif { font-family: var(--font-serif); }
+  .font-serif {
+    font-family: var(--font-serif);
+  }
 }
 
 @layer utilities {
-  .fade-in { animation: fadeIn 0.5s ease-out both; }
+  .fade-in {
+    animation: fadeIn 0.5s ease-out both;
+  }
+  .room-breathe {
+    animation: roomBreathe 7s ease-in-out infinite;
+  }
+  .room-drift {
+    animation: roomDrift 4.8s ease-in-out infinite;
+  }
+  .capsule-glow {
+    animation: capsuleGlow 3.6s ease-in-out infinite;
+  }
+
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes roomBreathe {
+    0%,
+    100% {
+      box-shadow: 0 24px 70px rgba(78, 69, 54, 0.1);
+    }
+    50% {
+      box-shadow: 0 28px 82px rgba(92, 109, 97, 0.17);
+    }
+  }
+  @keyframes roomDrift {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+  @keyframes capsuleGlow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 rgba(239, 215, 155, 0);
+    }
+    50% {
+      box-shadow: 0 0 22px rgba(239, 215, 155, 0.55);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in,
+    .room-breathe,
+    .room-drift,
+    .capsule-glow {
+      animation: none;
+    }
   }
 }
