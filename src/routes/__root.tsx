@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -72,6 +73,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#6f8374" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "Quiet Space" },
       { title: "Quiet Space · 安静的生活记录" },
       { name: "description", content: "一个没有点赞、没有比较的生活记录空间。" },
       { name: "author", content: "Lovable" },
@@ -95,6 +101,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/icons/quiet-space.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/icons/quiet-space-192.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -111,7 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <head>
         <HeadContent />
       </head>
@@ -128,7 +137,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PwaRegistration />
       <Outlet />
     </QueryClientProvider>
   );
+}
+
+function PwaRegistration() {
+  useEffect(() => {
+    if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
+
+    const register = () => {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
+        // The app still works normally if registration is unavailable.
+      });
+    };
+
+    if (document.readyState === "complete") register();
+    else window.addEventListener("load", register, { once: true });
+
+    return () => window.removeEventListener("load", register);
+  }, []);
+
+  return null;
 }

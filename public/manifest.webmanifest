@@ -1,0 +1,44 @@
+{
+  "id": "/",
+  "name": "Quiet Space",
+  "short_name": "Quiet Space",
+  "description": "一个没有点赞、没有比较的生活记录空间。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f0e6",
+  "theme_color": "#6f8374",
+  "categories": ["lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/icons/quiet-space-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/quiet-space-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "我的空间",
+      "short_name": "我的空间",
+      "url": "/me"
+    },
+    {
+      "name": "朋友",
+      "short_name": "朋友",
+      "url": "/friends"
+    },
+    {
+      "name": "房间",
+      "short_name": "房间",
+      "url": "/rooms"
+    }
+  ]
+}
