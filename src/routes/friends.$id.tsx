@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
+import { FriendRoomScene } from "../components/FriendRoomScene";
 import { SectionTitle } from "../components/SectionTitle";
 import { WeekNotes } from "../components/WeekNotes";
 import { findPerson } from "../data/mockData";
@@ -13,14 +14,17 @@ export const Route = createFileRoute("/friends/$id")({
 function FriendPage() {
   const { id } = Route.useParams();
   const basePerson = findPerson(id);
-  const livePerson = useStore((s) =>
-    id === "me" ? s.me : s.friends.find((f) => f.id === id),
-  );
+  const store = useStore((s) => s);
+  const livePerson = id === "me" ? store.me : store.friends.find((f) => f.id === id);
   const person = livePerson ?? basePerson;
 
-  const data = useStore((s) => (person ? personEntriesFromStore(s, person.id) : null));
-  const replies = useStore((s) =>
-    person ? s.replies.filter((r) => r.personId === person.id) : [],
+  const data = useMemo(
+    () => (person ? personEntriesFromStore(store, person.id) : null),
+    [person, store],
+  );
+  const replies = useMemo(
+    () => (person ? store.replies.filter((r) => r.personId === person.id) : []),
+    [person, store],
   );
 
   const [reply, setReply] = useState("");
@@ -29,7 +33,11 @@ function FriendPage() {
     return (
       <PageShell>
         <p className="py-20 text-center text-sm text-[var(--quiet)]">没有找到这个房间。</p>
-        <div className="text-center"><Link to="/" className="text-sm text-[var(--bluegrey)]">回走廊</Link></div>
+        <div className="text-center">
+          <Link to="/" className="text-sm text-[var(--bluegrey)]">
+            回走廊
+          </Link>
+        </div>
       </PageShell>
     );
   }
@@ -55,35 +63,22 @@ function FriendPage() {
 
       <header className="mb-10">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
-          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: person.color }} />
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: person.color }}
+          />
           <span>{person.name}</span>
         </div>
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{person.name}的房间</h1>
         <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio}</p>
       </header>
 
-      {/* 本周摘要 */}
-      <section className="mb-6 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
-        <div className="grid grid-cols-1 gap-4 text-[14px]">
-          {r.mood && <Field label="本周">{r.mood}</Field>}
-          {r.reading && <Field label="在读">《{r.reading.title}》 · {r.reading.author}</Field>}
-          {r.watching && <Field label="在看">《{r.watching.title}》 · {r.watching.director}</Field>}
-          {r.listening && (
-            <Field label="在听">
-              {r.listening.title}
-              {r.listening.artist && <span className="text-[var(--quiet)]"> · {r.listening.artist}</span>}
-            </Field>
-          )}
-          {r.sentence && (
-            <Field label="随记">
-              <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
-            </Field>
-          )}
-          {!r.mood && !r.reading && !r.watching && !r.listening && !r.sentence && (
-            <p className="text-[12px] text-[var(--quiet)]">TA 最近还没留下什么。</p>
-          )}
-        </div>
-      </section>
+      <FriendRoomScene
+        person={person}
+        books={data.books}
+        movies={data.movies}
+        images={data.images}
+      />
 
       {/* Ta 的这一周 */}
       <section className="mb-10">
@@ -107,8 +102,15 @@ function FriendPage() {
           <div className="flex gap-4 overflow-x-auto pb-2">
             {data.books.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
-                <img src={b.cover} alt={b.title} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
-                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{b.title}》</div>
+                <img
+                  src={b.cover}
+                  alt={b.title}
+                  className="h-36 w-28 rounded-md object-cover"
+                  loading="lazy"
+                />
+                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">
+                  《{b.title}》
+                </div>
                 <div className="text-[11px] text-[var(--quiet)] truncate">{b.author}</div>
               </div>
             ))}
@@ -122,8 +124,15 @@ function FriendPage() {
           <div className="flex gap-4 overflow-x-auto pb-2">
             {data.movies.map((m) => (
               <div key={m.id} className="w-36 shrink-0">
-                <img src={m.cover} alt={m.title} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
-                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">《{m.title}》</div>
+                <img
+                  src={m.cover}
+                  alt={m.title}
+                  className="h-24 w-36 rounded-md object-cover"
+                  loading="lazy"
+                />
+                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">
+                  《{m.title}》
+                </div>
                 <div className="text-[11px] text-[var(--quiet)] truncate">{m.director}</div>
               </div>
             ))}
@@ -136,7 +145,10 @@ function FriendPage() {
           <SectionTitle>随记</SectionTitle>
           <div className="space-y-4">
             {publicSentences.map((s) => (
-              <p key={s.id} className="font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90 border-l-2 border-[var(--border)] pl-4">
+              <p
+                key={s.id}
+                className="font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90 border-l-2 border-[var(--border)] pl-4"
+              >
                 {s.text}
               </p>
             ))}
@@ -181,14 +193,5 @@ function FriendPage() {
         )}
       </section>
     </PageShell>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-4">
-      <span className="w-10 shrink-0 text-[11px] tracking-widest text-[var(--quiet)] pt-0.5">{label}</span>
-      <span className="flex-1 text-[var(--ink)]/90 leading-relaxed">{children}</span>
-    </div>
   );
 }
