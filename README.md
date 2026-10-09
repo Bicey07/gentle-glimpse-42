@@ -21,7 +21,8 @@ Quiet Space asks a different question: what if a social product helped people st
 
 - A corridor-style home that summarizes your space, friends' spaces, shared rooms, and recent traces.
 - An interactive memory room with a character, gentle furnishings, and an optional generated ambient soundscape.
-- Client-side AES-GCM memory capsules that turn encrypted notes into objects in the room, with an anniversary ritual and a local SHA-256 proof.
+- Client-side AES-GCM memory capsules that turn encrypted notes or uploaded object photos into room objects, with an anniversary ritual and a SHA-256 integrity proof.
+- An optional Phantom flow that anchors only a capsule's integrity proof and creation time to Solana Devnet, with a direct Explorer receipt.
 - A lightweight add flow for a sentence, image URL, book, film, or weekly status, with self/friends visibility controls.
 - A personal space with a weekly snapshot, books, films, shared notes, and private notes.
 - A friends directory and individual friend spaces, including a prototype flow for leaving a private reply.
@@ -40,7 +41,7 @@ Quiet Space asks a different question: what if a social product helped people st
 
 Quiet Space is a functional front-end prototype built with React, TanStack Start, Tailwind CSS, and Lovable. The main interaction paths work in a single browser, but all people and initial content are simulated.
 
-There is currently no authentication, database, real friend graph, media upload service, or real-time multi-user behavior. New prototype data is stored only in the browser's local storage. Memory capsules are genuinely encrypted in the browser, but encrypted cloud storage and Solana Devnet verification are explicitly marked as the next build step rather than presented as finished functionality.
+There is currently no authentication, database, real friend graph, encrypted media hosting service, or real-time multi-user behavior. New prototype data and encrypted photos are stored only in the browser's local storage. Memory capsules are genuinely encrypted in the browser, and users with Phantom can anchor a content proof to Solana Devnet; the private text and image never enter the transaction.
 
 ## Hacker House Build Goal
 

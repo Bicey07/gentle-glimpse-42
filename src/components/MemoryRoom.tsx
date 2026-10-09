@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 
 type Capsule = {
   id: string;
@@ -7,6 +8,9 @@ type Capsule = {
   salt: string;
   proof: string;
   createdAt: number;
+  kind?: "memory" | "object";
+  solanaSignature?: string;
+  owner?: string;
 };
 
 type MemoryPayload = {
@@ -14,6 +18,7 @@ type MemoryPayload = {
   note: string;
   memoryDate: string;
   sharedWith: string;
+  imageDataUrl?: string;
 };
 
 type AmbientAudio = {
@@ -23,8 +28,23 @@ type AmbientAudio = {
 };
 
 const STORAGE_KEY = "quiet-space:memory-capsules:v1";
+const SOLANA_RPC = "https://api.devnet.solana.com";
+const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+
+type SolanaProvider = {
+  isPhantom?: boolean;
+  publicKey?: PublicKey;
+  connect: () => Promise<{ publicKey: PublicKey }>;
+  signAndSendTransaction: (transaction: Transaction) => Promise<{ signature: string }>;
+};
+
+declare global {
+  interface Window {
+    solana?: SolanaProvider;
+  }
+}
 
 function toBase64(bytes: Uint8Array) {
   let binary = "";
@@ -61,7 +81,11 @@ async function deriveKey(passphrase: string, salt: Uint8Array<ArrayBuffer>) {
   );
 }
 
-async function sealMemory(payload: MemoryPayload, passphrase: string): Promise<Capsule> {
+async function sealMemory(
+  payload: MemoryPayload,
+  passphrase: string,
+  kind: Capsule["kind"],
+): Promise<Capsule> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(passphrase, salt);
@@ -79,7 +103,35 @@ async function sealMemory(payload: MemoryPayload, passphrase: string): Promise<C
     salt: toBase64(salt),
     proof: toBase64(new Uint8Array(proof)),
     createdAt: Date.now(),
+    kind,
   };
+}
+
+async function prepareRoomImage(file: File) {
+  if (!file.type.startsWith("image/")) throw new Error("TYPE");
+  if (file.size > 8 * 1024 * 1024) throw new Error("SIZE");
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = sourceUrl;
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("IMAGE"));
+    });
+
+    const maxEdge = 720;
+    const scale = Math.min(1, maxEdge / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("CANVAS");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/webp", 0.72);
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
 }
 
 async function unsealMemory(capsule: Capsule, passphrase: string): Promise<MemoryPayload> {
@@ -116,12 +168,16 @@ export function MemoryRoom({ name }: { name: string }) {
   const [memoryDate, setMemoryDate] = useState("");
   const [sharedWith, setSharedWith] = useState("");
   const [passphrase, setPassphrase] = useState("");
+  const [imageDataUrl, setImageDataUrl] = useState("");
+  const [roomObjects, setRoomObjects] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState<MemoryPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [soundOn, setSoundOn] = useState(false);
   const audioRef = useRef<AmbientAudio | null>(null);
   const selectedCapsule = capsules.find((item) => item.id === selectedId) ?? null;
+  const featuredObject = capsules.find((item) => item.kind === "object") ?? null;
+  const featuredObjectImage = featuredObject ? roomObjects[featuredObject.id] : undefined;
 
   useEffect(() => {
     try {
@@ -153,6 +209,7 @@ export function MemoryRoom({ name }: { name: string }) {
     setMemoryDate("");
     setSharedWith("");
     setPassphrase("");
+    setImageDataUrl("");
     setNotice("");
     setMode("create");
   };
@@ -165,10 +222,31 @@ export function MemoryRoom({ name }: { name: string }) {
     setMode("unlock");
   };
 
+  const selectImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setBusy(true);
+    setNotice("");
+    try {
+      setImageDataUrl(await prepareRoomImage(file));
+    } catch (error) {
+      setImageDataUrl("");
+      setNotice(
+        error instanceof Error && error.message === "SIZE"
+          ? "图片请控制在 8MB 以内。"
+          : "这张图片暂时无法读取。",
+      );
+    } finally {
+      setBusy(false);
+      event.target.value = "";
+    }
+  };
+
   const createCapsule = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!title.trim() || !note.trim()) {
-      setNotice("给这段记忆一个名字，再留下一点内容。");
+    if (!title.trim() || (!note.trim() && !imageDataUrl)) {
+      setNotice("给这段记忆一个名字，再留下一点内容或照片。");
       return;
     }
     if (passphrase.length < 6) {
@@ -185,15 +263,25 @@ export function MemoryRoom({ name }: { name: string }) {
           note: note.trim(),
           memoryDate,
           sharedWith: sharedWith.trim(),
+          imageDataUrl: imageDataUrl || undefined,
         },
         passphrase,
+        imageDataUrl ? "object" : "memory",
       );
       const next = [capsule, ...capsules];
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       setCapsules(next);
+      if (imageDataUrl) {
+        setRoomObjects((current) => ({ ...current, [capsule.id]: imageDataUrl }));
+      }
       setMode(null);
       setPassphrase("");
-      setNotice("记忆已在这台设备上加密，成为房间里的一件物品。");
+      setImageDataUrl("");
+      setNotice(
+        capsule.kind === "object"
+          ? "照片已在这台设备上加密，并作为一件物品进入小屋。"
+          : "记忆已在这台设备上加密，成为房间里的一件物品。",
+      );
     } catch {
       setNotice("这次没有封存成功，请稍后再试。");
     } finally {
@@ -209,10 +297,65 @@ export function MemoryRoom({ name }: { name: string }) {
     setBusy(true);
     setNotice("");
     try {
-      setRevealed(await unsealMemory(capsule, passphrase));
+      const payload = await unsealMemory(capsule, passphrase);
+      setRevealed(payload);
+      if (payload.imageDataUrl) {
+        setRoomObjects((current) => ({ ...current, [capsule.id]: payload.imageDataUrl! }));
+      }
       setPassphrase("");
     } catch {
       setNotice("口令不对，或者这段记忆已经无法读取。");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sealProofOnSolana = async () => {
+    const capsule = selectedCapsule;
+    if (!capsule) return;
+    const provider = window.solana;
+    if (!provider?.isPhantom) {
+      setNotice("请先安装或打开 Phantom 钱包，再把证明写入 Solana Devnet。");
+      return;
+    }
+
+    setBusy(true);
+    setNotice("");
+    try {
+      const { publicKey } = await provider.connect();
+      const connection = new Connection(SOLANA_RPC, "confirmed");
+      const latest = await connection.getLatestBlockhash("confirmed");
+      const memo = `quiet-space:v1|${capsule.proof}|${capsule.createdAt}`;
+      const transaction = new Transaction().add(
+        new TransactionInstruction({
+          keys: [],
+          programId: MEMO_PROGRAM_ID,
+          data: encoder.encode(memo) as unknown as Buffer,
+        }),
+      );
+      transaction.feePayer = publicKey;
+      transaction.recentBlockhash = latest.blockhash;
+
+      const { signature } = await provider.signAndSendTransaction(transaction);
+      await connection.confirmTransaction(
+        {
+          signature,
+          blockhash: latest.blockhash,
+          lastValidBlockHeight: latest.lastValidBlockHeight,
+        },
+        "confirmed",
+      );
+
+      const next = capsules.map((item) =>
+        item.id === capsule.id
+          ? { ...item, solanaSignature: signature, owner: publicKey.toBase58() }
+          : item,
+      );
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      setCapsules(next);
+      setNotice("完整性指纹已写入 Solana Devnet。记忆正文和照片没有上链。");
+    } catch {
+      setNotice("没有完成上链。钱包可能取消了确认，或 Devnet 暂时不可用。");
     } finally {
       setBusy(false);
     }
@@ -299,6 +442,30 @@ export function MemoryRoom({ name }: { name: string }) {
           <span className="room-drift absolute right-3 top-3 h-3 w-3 rounded-full bg-[#fff8ce] shadow-[0_0_16px_#fff0a3]" />
         </div>
 
+        {featuredObject && (
+          <button
+            type="button"
+            onClick={() => openCapsule(featuredObject.id)}
+            className="group absolute left-1/2 top-7 z-10 h-[76px] w-[68px] -translate-x-1/2 rotate-1 border-[6px] border-[#8e7560] bg-[#ded6c8] shadow-[0_8px_18px_rgba(72,56,42,0.14)] transition-transform hover:-translate-y-1"
+            aria-label="打开从现实带进小屋的物品"
+          >
+            {featuredObjectImage ? (
+              <img
+                src={featuredObjectImage}
+                alt="从现实带进小屋的物品"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center text-lg text-[#756858]">
+                ◇
+              </span>
+            )}
+            <span className="absolute -bottom-5 left-1/2 w-max -translate-x-1/2 text-[9px] text-[#756858] opacity-0 transition-opacity group-hover:opacity-100">
+              {featuredObjectImage ? "现实里的物品" : "输入口令后显现"}
+            </span>
+          </button>
+        )}
+
         <div className="absolute right-5 top-9 w-28">
           <div className="h-1 rounded-full bg-[#8d7865]" />
           <div className="mt-2 flex items-end justify-center gap-1.5">
@@ -354,7 +521,7 @@ export function MemoryRoom({ name }: { name: string }) {
           <div>
             <div className="text-[11px] text-[var(--ink)]">{capsules.length} 份加密记忆</div>
             <div className="mt-0.5 text-[9px] tracking-wider text-[var(--quiet)]">
-              LOCAL AES-GCM · SOLANA DEVNET NEXT
+              AES-GCM · SOLANA DEVNET PROOF
             </div>
           </div>
           <button
@@ -371,8 +538,8 @@ export function MemoryRoom({ name }: { name: string }) {
         <div className="flex items-start gap-2">
           <span className="mt-0.5 text-[var(--sage)]">●</span>
           <p>
-            记忆正文会先在你的设备上加密。当前 Demo
-            只保存在本机；开发阶段将把加密内容放到链下，并在 Solana Devnet 记录时间与归属证明。
+            文字和照片会先在你的设备上加密；当前密文只保存在本机。你可以把内容指纹写入 Solana
+            Devnet，公开证明时间与完整性，照片本身不会上链。
           </p>
         </div>
         {notice && (
@@ -423,6 +590,49 @@ export function MemoryRoom({ name }: { name: string }) {
                     className="mt-2 w-full resize-none rounded-2xl border border-[var(--border)] bg-white/45 p-3 font-serif leading-relaxed outline-none focus:border-[var(--bluegrey)]"
                   />
                 </label>
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[11px] text-[var(--quiet)]">把现实里的物品带进小屋</span>
+                    <span className="text-[9px] tracking-wider text-[var(--quiet)]">
+                      可选 · 本地加密
+                    </span>
+                  </div>
+                  {imageDataUrl ? (
+                    <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/45 p-2">
+                      <img
+                        src={imageDataUrl}
+                        alt="准备加密的实物照片"
+                        className="h-40 w-full rounded-xl object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setImageDataUrl("")}
+                        className="absolute right-4 top-4 rounded-full bg-[#302b25]/65 px-2.5 py-1 text-[10px] text-white"
+                      >
+                        重新选择
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-[#ccbfae] bg-white/35 px-4 py-4 transition-colors hover:bg-white/55">
+                      <span>
+                        <span className="block font-serif text-sm text-[var(--ink)]">
+                          拍摄或上传一件物品
+                        </span>
+                        <span className="mt-1 block text-[10px] text-[var(--quiet)]">
+                          会压缩后与文字一起加密，最大 8MB
+                        </span>
+                      </span>
+                      <span className="text-xl text-[var(--bluegrey)]">＋</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={selectImage}
+                        className="sr-only"
+                      />
+                    </label>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
                     <span className="text-[11px] text-[var(--quiet)]">发生日期</span>
@@ -465,16 +675,46 @@ export function MemoryRoom({ name }: { name: string }) {
             ) : revealed ? (
               <div className="space-y-5">
                 <div className="rounded-3xl border border-[#dfd1bc] bg-white/45 p-5">
+                  {revealed.imageDataUrl && (
+                    <img
+                      src={revealed.imageDataUrl}
+                      alt={revealed.title}
+                      className="mb-5 max-h-72 w-full rounded-2xl object-cover shadow-sm"
+                    />
+                  )}
                   <h4 className="font-serif text-xl text-[var(--ink)]">{revealed.title}</h4>
-                  <p className="mt-4 whitespace-pre-wrap font-serif text-[15px] leading-[1.9] text-[var(--ink)]/85">
-                    {revealed.note}
-                  </p>
+                  {revealed.note && (
+                    <p className="mt-4 whitespace-pre-wrap font-serif text-[15px] leading-[1.9] text-[var(--ink)]/85">
+                      {revealed.note}
+                    </p>
+                  )}
                   <div className="mt-5 space-y-1 border-t border-[var(--border)] pt-4 text-[11px] text-[var(--quiet)]">
                     {revealed.memoryDate && <p>发生于 {revealed.memoryDate}</p>}
                     {revealed.sharedWith && <p>与 {revealed.sharedWith} 共同记得</p>}
                     {selectedCapsule && <p>本地证明 {selectedCapsule.proof.slice(0, 12)}…</p>}
+                    {selectedCapsule?.owner && <p>所有者 {selectedCapsule.owner.slice(0, 8)}…</p>}
                   </div>
                 </div>
+                {selectedCapsule?.solanaSignature ? (
+                  <a
+                    href={`https://explorer.solana.com/tx/${selectedCapsule.solanaSignature}?cluster=devnet`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-2xl border border-[#c8d7c1] bg-[#eef5e9] px-4 py-3 text-center text-xs text-[#52684f]"
+                  >
+                    ✓ 已由 Solana Devnet 验证 · 查看交易 ↗
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={sealProofOnSolana}
+                    className="w-full rounded-full border border-[var(--ink)] px-5 py-3 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+                  >
+                    {busy ? "等待钱包确认……" : "Seal on Solana Devnet"}
+                  </button>
+                )}
+                {notice && <p className="text-xs text-[#9a5f4f]">{notice}</p>}
                 {anniversaryLabel(revealed.memoryDate) && (
                   <div className="capsule-glow rounded-2xl border border-[#ead8ad] bg-[#fff6d9] px-4 py-3 text-center font-serif text-sm text-[#7b6645]">
                     ✦ {anniversaryLabel(revealed.memoryDate)}
