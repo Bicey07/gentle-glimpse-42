@@ -9,23 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MeRouteImport } from './routes/me'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AddRouteImport } from './routes/add'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RoomsIndexRouteImport } from './routes/rooms.index'
+import { Route as AddRouteImport } from './routes/add'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MeRouteImport } from './routes/me'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
-import { Route as RoomsIdRouteImport } from './routes/rooms.$id'
 import { Route as FriendsIdRouteImport } from './routes/friends.$id'
+import { Route as RoomsIndexRouteImport } from './routes/rooms.index'
+import { Route as RoomsIdRouteImport } from './routes/rooms.$id'
 
-const MeRoute = MeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddRoute = AddRouteImport.update({
@@ -33,14 +28,14 @@ const AddRoute = AddRouteImport.update({
   path: '/add',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoomsIndexRoute = RoomsIndexRouteImport.update({
-  id: '/rooms/',
-  path: '/rooms/',
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsIndexRoute = FriendsIndexRouteImport.update({
@@ -48,14 +43,19 @@ const FriendsIndexRoute = FriendsIndexRouteImport.update({
   path: '/friends/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoomsIdRoute = RoomsIdRouteImport.update({
-  id: '/rooms/$id',
-  path: '/rooms/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FriendsIdRoute = FriendsIdRouteImport.update({
   id: '/friends/$id',
   path: '/friends/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoomsIndexRoute = RoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoomsIdRoute = RoomsIdRouteImport.update({
+  id: '/rooms/$id',
+  path: '/rooms/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -136,18 +136,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/me': {
-      id: '/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof MeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add': {
@@ -157,18 +150,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AddRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/rooms/': {
-      id: '/rooms/'
-      path: '/rooms'
-      fullPath: '/rooms/'
-      preLoaderRoute: typeof RoomsIndexRouteImport
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends/': {
@@ -178,18 +171,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FriendsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/rooms/$id': {
-      id: '/rooms/$id'
-      path: '/rooms/$id'
-      fullPath: '/rooms/$id'
-      preLoaderRoute: typeof RoomsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/friends/$id': {
       id: '/friends/$id'
       path: '/friends/$id'
       fullPath: '/friends/$id'
       preLoaderRoute: typeof FriendsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rooms/': {
+      id: '/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof RoomsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rooms/$id': {
+      id: '/rooms/$id'
+      path: '/rooms/$id'
+      fullPath: '/rooms/$id'
+      preLoaderRoute: typeof RoomsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
