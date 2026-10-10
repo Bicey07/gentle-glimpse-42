@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { actions, type ActionResult, type Visibility } from "../lib/store";
+import { actions, useStore, type ActionResult, type Visibility } from "../lib/store";
 
 type PostType = "sentence" | "image" | "book" | "movie" | "status";
 
@@ -27,6 +27,10 @@ function AddPage() {
   const [type, setType] = useState<PostType>(search.type ?? "sentence");
   const [sent, setSent] = useState(false);
   const [visibility, setVisibility] = useState<Visibility>("friends");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [needLogin, setNeedLogin] = useState(false);
+  const mode = useStore((s) => s.mode);
   const navigate = useNavigate();
 
   // form state
@@ -41,25 +45,23 @@ function AddPage() {
   const [movieNote, setMovieNote] = useState("");
   const [mood, setMood] = useState("平静");
   const [moodExtra, setMoodExtra] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
+    setError(null);
+    setNeedLogin(false);
     setBusy(true);
-    setNotice("");
-    let result: ActionResult;
-    if (type === "sentence") result = await actions.addSentence(text, visibility);
-    else if (type === "image")
-      result = await actions.addImage(imgFile, imgCap || undefined, visibility);
-    else if (type === "book")
-      result = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
-    else if (type === "movie")
-      result = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
-    else result = await actions.updateMood(mood, moodExtra);
+    let res: ActionResult;
+    if (type === "sentence") res = await actions.addSentence(text, visibility);
+    else if (type === "image") res = await actions.addImage(imgFile, imgCap || undefined, visibility);
+    else if (type === "book") res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
+    else if (type === "movie") res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
+    else res = await actions.updateMood(mood, moodExtra);
     setBusy(false);
-    if (!result.ok) {
-      setNotice(result.message);
+    if (!res.ok) {
+      setError(res.reason === "auth" ? res.message : `没能放进去：${res.message}`);
+      setNeedLogin(res.reason === "auth");
       return;
     }
     setSent(true);
@@ -254,25 +256,25 @@ function AddPage() {
         )}
 
         <div className="pt-4">
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
-          >
-            {busy ? "正在放进房间…" : "放进我的房间"}
-          </button>
-          {notice && (
-            <p className="mt-3 text-center text-xs text-[var(--quiet)]">
-              {notice}{" "}
-              {notice.includes("登录") && (
-                <Link to="/me" className="text-[var(--bluegrey)]">
+          {error && (
+            <p role="alert" className="mb-3 text-center text-xs text-[var(--bluegrey)]">
+              {error}
+              {needLogin && (
+                <Link to="/auth" className="ml-2 underline underline-offset-4 hover:text-[var(--ink)]">
                   去登录 →
                 </Link>
               )}
             </p>
           )}
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+          >
+            {busy ? "正在放进房间…" : "放进我的房间"}
+          </button>
           <p className="mt-3 text-center text-xs text-[var(--quiet)]">
-            没有标签、没有定时、没有提醒。
+            {mode === "demo" ? "你正在看示例房间，登录后才能留下自己的痕迹。" : "没有标签、没有定时、没有提醒。"}
           </p>
         </div>
       </form>

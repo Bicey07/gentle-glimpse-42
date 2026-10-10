@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
 import { WeekNotes } from "../components/WeekNotes";
-import { AuthPanel } from "../components/AuthPanel";
 import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/me")({
@@ -33,10 +32,7 @@ function MePage() {
   const recent = person.recent ?? fallbackMe.recent;
 
   const traces = useMemo(
-    () =>
-      safeArray(allTraces)
-        .filter((t) => t?.personId === "me")
-        .slice(0, 6),
+    () => safeArray(allTraces).filter((t) => t?.personId === "me").slice(0, 6),
     [allTraces],
   );
   const bookshelf = useMemo(
@@ -62,22 +58,15 @@ function MePage() {
 
   return (
     <PageShell>
-      <Link
-        to="/"
-        className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
-      >
+      <Link to="/" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
         ← 走廊
       </Link>
 
       <header className="mb-10">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">My Space</div>
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">你的房间</h1>
-        <p className="mt-1 text-sm text-[var(--quiet)]">
-          {person.bio || "这里可以慢慢放下生活的痕迹。"}
-        </p>
+        <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio || "这里可以慢慢放下生活的痕迹。"}</p>
       </header>
-
-      <AuthPanel />
 
       <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center justify-between">
@@ -93,14 +82,10 @@ function MePage() {
         <div className="grid grid-cols-1 gap-4 text-[14px]">
           <Field label="心情">{recent.mood || "还没有写下本周状态"}</Field>
           <Field label="在读">
-            {recent.reading
-              ? `《${recent.reading.title}》 · ${recent.reading.author}`
-              : "还没有放入书架"}
+            {recent.reading ? `《${recent.reading.title}》 · ${recent.reading.author}` : "还没有放入书架"}
           </Field>
           <Field label="在看">
-            {recent.watching
-              ? `《${recent.watching.title}》 · ${recent.watching.director}`
-              : "还没有记录影像"}
+            {recent.watching ? `《${recent.watching.title}》 · ${recent.watching.director}` : "还没有记录影像"}
           </Field>
           <Field label="随记">
             {recent.sentence ? (
@@ -117,9 +102,7 @@ function MePage() {
           mood={recent.mood}
           wish={recent.weekPlan}
           freeDays={recent.freeDays}
-          traces={traces
-            .slice(0, 3)
-            .map((t) => `${t.verb ?? ""}${t.detail ? "  " + t.detail : ""}`)}
+          traces={traces.slice(0, 3).map((t) => `${t.verb ?? ""}${t.detail ? "  " + t.detail : ""}`)}
           footer="不是日历，不是打卡。只是这一周可能的样子。"
         />
       </section>
@@ -143,7 +126,7 @@ function MePage() {
                 <span className="text-[var(--quiet)]">·</span>
                 <span>
                   {t.verb || "留下了一点生活痕迹"}
-                  {t.detail && <span className="text-[var(--quiet)]"> {t.detail}</span>}
+                  {t.detail && <span className="text-[var(--quiet)]">  {t.detail}</span>}
                 </span>
               </li>
             ))}
@@ -159,15 +142,8 @@ function MePage() {
           <div className="flex gap-4 overflow-x-auto pb-2">
             {bookshelf.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
-                <img
-                  src={b.cover}
-                  alt={b.title || "书"}
-                  className="h-36 w-28 rounded-md object-cover"
-                  loading="lazy"
-                />
-                <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">
-                  《{b.title || "未命名"}》
-                </div>
+                <img src={b.cover} alt={b.title || "书"} className="h-36 w-28 rounded-md object-cover" loading="lazy" />
+                <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">《{b.title || "未命名"}》</div>
                 <div className="truncate text-[11px] text-[var(--quiet)]">{b.author || "—"}</div>
               </div>
             ))}
@@ -185,18 +161,9 @@ function MePage() {
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {films.map((m) => (
                   <div key={m.id} className="w-36 shrink-0">
-                    <img
-                      src={m.cover}
-                      alt={m.title || "电影"}
-                      className="h-24 w-36 rounded-md object-cover"
-                      loading="lazy"
-                    />
-                    <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">
-                      《{m.title || "未命名"}》
-                    </div>
-                    <div className="truncate text-[11px] text-[var(--quiet)]">
-                      {m.director || "—"}
-                    </div>
+                    <img src={m.cover} alt={m.title || "电影"} className="h-24 w-36 rounded-md object-cover" loading="lazy" />
+                    <div className="mt-2 truncate font-serif text-[13px] text-[var(--ink)]">《{m.title || "未命名"}》</div>
+                    <div className="truncate text-[11px] text-[var(--quiet)]">{m.director || "—"}</div>
                   </div>
                 ))}
               </div>
@@ -225,10 +192,7 @@ function MePage() {
         ) : (
           <div className="space-y-4">
             {sharedNotes.map((s) => (
-              <p
-                key={s.id}
-                className="border-l-2 border-[var(--border)] pl-4 font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90"
-              >
+              <p key={s.id} className="border-l-2 border-[var(--border)] pl-4 font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90">
                 {s.text || "一点安静的记录。"}
               </p>
             ))}
@@ -265,9 +229,7 @@ function safeArray<T>(value: T[] | undefined | null): T[] {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <span className="w-10 shrink-0 pt-0.5 text-[11px] tracking-widest text-[var(--quiet)]">
-        {label}
-      </span>
+      <span className="w-10 shrink-0 pt-0.5 text-[11px] tracking-widest text-[var(--quiet)]">{label}</span>
       <span className="flex-1 leading-relaxed text-[var(--ink)]/90">{children}</span>
     </div>
   );

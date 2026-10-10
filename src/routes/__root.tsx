@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { supabase } from "../integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { session } from "../lib/store";
 
 function NotFoundComponent() {
@@ -139,33 +139,23 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthSessionBridge />
       <PwaRegistration />
+      <AuthSync />
       <Outlet />
     </QueryClientProvider>
   );
 }
 
-function AuthSessionBridge() {
+// Single auth listener: guests see the mock demo, signed-in users see Cloud data.
+function AuthSync() {
   useEffect(() => {
-    let active = true;
-
-    void supabase.auth.getSession().then(({ data }) => {
-      if (active) session.setUser(data.session?.user ?? null);
+    supabase.auth.getSession().then(({ data }) => session.setUser(data.session?.user ?? null));
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED" && event !== "INITIAL_SESSION") return;
+      session.setUser(s?.user ?? null);
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (active) session.setUser(nextSession?.user ?? null);
-    });
-
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
+    return () => data.subscription.unsubscribe();
   }, []);
-
   return null;
 }
 

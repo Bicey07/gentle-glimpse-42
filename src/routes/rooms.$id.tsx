@@ -24,14 +24,20 @@ function RoomPage() {
   // Select the whole array (stable ref); derive filtered list in useMemo.
   const allNotes = useStore((s) => s.roomNotes);
   const roomNotes = useMemo(
-    () => (allNotes ?? []).filter((n) => n.roomId === id).sort((a, b) => b.at - a.at),
+    () =>
+      (allNotes ?? [])
+        .filter((n) => n.roomId === id)
+        .sort((a, b) => b.at - a.at),
     [allNotes, id],
   );
 
   const [text, setText] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [note, setNote] = useState<{ text: string; login?: boolean } | null>(null);
+  const mode = useStore((s) => s.mode);
+  const myRooms = useStore((s) => s.myRooms);
+  const loading = useStore((s) => s.loading);
 
   const everyone = useMemo(() => [me, ...friends], []);
   const freeSlots = useMemo(
@@ -47,10 +53,7 @@ function RoomPage() {
   if (!room) {
     return (
       <PageShell>
-        <Link
-          to="/rooms"
-          className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
-        >
+        <Link to="/rooms" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
           ← Rooms
         </Link>
         <p className="py-20 text-center font-serif text-[15px] text-[var(--quiet)]">房间不存在。</p>
@@ -61,15 +64,17 @@ function RoomPage() {
   const people = roomPeople[room.id] ?? [];
   const isExhibition = room.id === "weekend-exhibition";
 
+  const isMember = mode === "cloud" && myRooms.includes(room.id);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || busy) return;
     setBusy(true);
-    setNotice("");
-    const result = await actions.addRoomNote(room.id, text);
+    setNote(null);
+    const res = await actions.addRoomNote(room.id, text);
     setBusy(false);
-    if (!result.ok) {
-      setNotice(result.message);
+    if (!res.ok) {
+      setNote({ text: res.reason === "auth" ? "登录后才能在房间里留一句。" : `没能留下：${res.message}`, login: res.reason === "auth" });
       return;
     }
     setText("");
@@ -77,21 +82,23 @@ function RoomPage() {
     setTimeout(() => setSent(false), 1600);
   };
 
+  const join = async () => {
+    setBusy(true);
+    setNote(null);
+    const res = await actions.joinRoom(room.id);
+    setBusy(false);
+    if (!res.ok) setNote({ text: `没能进入：${res.message}` });
+  };
+
   return (
     <PageShell>
-      <Link
-        to="/rooms"
-        className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
-      >
+      <Link to="/rooms" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
         ← Rooms
       </Link>
 
       <header className="mb-10">
         <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
-          <span
-            className="inline-block h-3 w-3 rounded-sm"
-            style={{ backgroundColor: room.color }}
-          />
+          <span className="inline-block h-3 w-3 rounded-sm" style={{ backgroundColor: room.color }} />
           Shared Room
         </div>
         <h1 className="mt-4 font-serif text-2xl text-[var(--ink)]">{room.name}</h1>
@@ -133,7 +140,21 @@ function RoomPage() {
 
       <section className="mb-10">
         <SectionTitle>最近的纸条</SectionTitle>
-        {roomNotes.length === 0 ? (
+        {loading ? (
+          <p className="py-6 text-center text-xs text-[var(--quiet)]">正在推开门…</p>
+        ) : mode === "cloud" && !isMember ? (
+          <div className="py-6 text-center text-xs text-[var(--quiet)]">
+            <p>纸条只有房间里的人能看到。</p>
+            <button
+              type="button"
+              onClick={join}
+              disabled={busy}
+              className="mt-4 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+            >
+              {busy ? "稍等…" : "进入这个房间"}
+            </button>
+          </div>
+        ) : roomNotes.length === 0 ? (
           <p className="py-6 text-center text-xs text-[var(--quiet)]">这里还很安静。</p>
         ) : (
           <ul className="space-y-3">
@@ -143,9 +164,7 @@ function RoomPage() {
                 className="rounded-2xl border border-[var(--border)] bg-[var(--card)]/70 px-4 py-3"
               >
                 <div className="text-[10px] tracking-widest text-[var(--quiet)]">{n.fromName}</div>
-                <p className="mt-1 font-serif text-[15px] leading-[1.8] text-[var(--ink)]/90">
-                  {n.text}
-                </p>
+                <p className="mt-1 font-serif text-[15px] leading-[1.8] text-[var(--ink)]/90">{n.text}</p>
               </li>
             ))}
           </ul>
@@ -164,26 +183,17 @@ function RoomPage() {
           />
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-[var(--quiet)]">
-              {sent ? "已经放在这个房间。" : "房间里的人会看到。"}
+              {note ? note.text : sent ? "已经放在这个房间。" : mode === "cloud" && !isMember ? "留下第一句时会自动进入这个房间。" : "房间里的人会看到。"}
+              {note?.login && <Link to="/auth" className="ml-2 text-[var(--bluegrey)]">去登录 →</Link>}
             </span>
             <button
               type="submit"
               disabled={busy}
-              className="rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+              className="disabled:opacity-50 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
             >
               {busy ? "正在留下…" : "留在这个房间"}
             </button>
           </div>
-          {notice && (
-            <p className="text-xs text-[var(--quiet)]">
-              {notice}{" "}
-              {notice.includes("登录") && (
-                <Link to="/me" className="text-[var(--bluegrey)]">
-                  去登录 →
-                </Link>
-              )}
-            </p>
-          )}
         </form>
       </section>
     </PageShell>
