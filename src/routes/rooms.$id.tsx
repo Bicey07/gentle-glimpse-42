@@ -33,6 +33,11 @@ function RoomPage() {
 
   const [text, setText] = useState("");
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ text: string; login?: boolean } | null>(null);
+  const mode = useStore((s) => s.mode);
+  const myRooms = useStore((s) => s.myRooms);
+  const loading = useStore((s) => s.loading);
 
   const everyone = useMemo(() => [me, ...friends], []);
   const freeSlots = useMemo(
@@ -59,13 +64,30 @@ function RoomPage() {
   const people = roomPeople[room.id] ?? [];
   const isExhibition = room.id === "weekend-exhibition";
 
-  const submit = (e: React.FormEvent) => {
+  const isMember = mode === "cloud" && myRooms.includes(room.id);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    actions.addRoomNote(room.id, text);
+    if (!text.trim() || busy) return;
+    setBusy(true);
+    setNote(null);
+    const res = await actions.addRoomNote(room.id, text);
+    setBusy(false);
+    if (!res.ok) {
+      setNote({ text: res.reason === "auth" ? "登录后才能在房间里留一句。" : `没能留下：${res.message}`, login: res.reason === "auth" });
+      return;
+    }
     setText("");
     setSent(true);
     setTimeout(() => setSent(false), 1600);
+  };
+
+  const join = async () => {
+    setBusy(true);
+    setNote(null);
+    const res = await actions.joinRoom(room.id);
+    setBusy(false);
+    if (!res.ok) setNote({ text: `没能进入：${res.message}` });
   };
 
   return (
@@ -147,13 +169,15 @@ function RoomPage() {
           />
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-[var(--quiet)]">
-              {sent ? "已经放在这个房间。" : "房间里的人会看到。"}
+              {note ? note.text : sent ? "已经放在这个房间。" : mode === "cloud" && !isMember ? "留下第一句时会自动进入这个房间。" : "房间里的人会看到。"}
+              {note?.login && <Link to="/auth" className="ml-2 text-[var(--bluegrey)]">去登录 →</Link>}
             </span>
             <button
               type="submit"
-              className="rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+              disabled={busy}
+              className="disabled:opacity-50 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
             >
-              留在这个房间
+              {busy ? "正在留下…" : "留在这个房间"}
             </button>
           </div>
         </form>

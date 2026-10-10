@@ -16,7 +16,8 @@ function FriendPage() {
   const basePerson = findPerson(id);
   const store = useStore((s) => s);
   const livePerson = id === "me" ? store.me : store.friends.find((f) => f.id === id);
-  const person = livePerson ?? basePerson;
+  const mode = store.mode;
+  const person = livePerson ?? (mode === "demo" ? basePerson : undefined);
 
   const data = useMemo(
     () => (person ? personEntriesFromStore(store, person.id) : null),
@@ -28,6 +29,8 @@ function FriendPage() {
   );
 
   const [reply, setReply] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ ok: boolean; text: string; login?: boolean } | null>(null);
 
   if (!person || !data) {
     return (
@@ -45,11 +48,19 @@ function FriendPage() {
   const r = person.recent;
   const publicSentences = data.sentences.filter((s) => s.visibility !== "self");
 
-  const submitReply = (e: React.FormEvent) => {
+  const submitReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reply.trim()) return;
-    actions.addReply(person.id, reply);
-    setReply("");
+    if (!reply.trim() || busy) return;
+    setBusy(true);
+    setNote(null);
+    const res = await actions.addReply(person.id, reply);
+    setBusy(false);
+    if (res.ok) {
+      setReply("");
+      setNote({ ok: true, text: "已经轻轻送到了。" });
+    } else {
+      setNote({ ok: false, text: res.reason === "auth" ? "登录后才能留一句。" : `没能送出：${res.message}`, login: res.reason === "auth" });
+    }
   };
 
   return (
@@ -168,12 +179,18 @@ function FriendPage() {
             className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 font-serif text-[15px] leading-relaxed outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
           />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[var(--quiet)]">只有 TA 看得到</span>
+            <span className="text-[11px] text-[var(--quiet)]" role={note ? "status" : undefined}>
+              {note ? note.text : "只有 TA 看得到"}
+              {note?.login && (
+                <Link to="/auth" className="ml-2 text-[var(--bluegrey)]">去登录 →</Link>
+              )}
+            </span>
             <button
               type="submit"
-              className="rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+              disabled={busy}
+              className="disabled:opacity-50 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
             >
-              轻轻送出
+              {busy ? "送出中…" : "轻轻送出"}
             </button>
           </div>
         </form>
