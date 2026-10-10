@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { actions, type Visibility } from "../lib/store";
+import { actions, type ActionResult, type Visibility } from "../lib/store";
 
 type PostType = "sentence" | "image" | "book" | "movie" | "status";
 
@@ -27,11 +27,15 @@ function AddPage() {
   const [type, setType] = useState<PostType>(search.type ?? "sentence");
   const [sent, setSent] = useState(false);
   const [visibility, setVisibility] = useState<Visibility>("friends");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [needLogin, setNeedLogin] = useState(false);
+  const mode = useStore((s) => s.mode);
   const navigate = useNavigate();
 
   // form state
   const [text, setText] = useState("");
-  const [imgUrl, setImgUrl] = useState("");
+  const [imgFile, setImgFile] = useState<File | null>(null);
   const [imgCap, setImgCap] = useState("");
   const [bookTitle, setBookTitle] = useState("");
   const [bookAuthor, setBookAuthor] = useState("");
@@ -42,17 +46,24 @@ function AddPage() {
   const [mood, setMood] = useState("平静");
   const [moodExtra, setMoodExtra] = useState("");
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (type === "sentence") actions.addSentence(text, visibility);
-    if (type === "image") {
-      const url = imgUrl.trim() ||
-        "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=70";
-      actions.addImage(url, imgCap || undefined, visibility);
+    if (busy) return;
+    setError(null);
+    setNeedLogin(false);
+    setBusy(true);
+    let res: ActionResult;
+    if (type === "sentence") res = await actions.addSentence(text, visibility);
+    else if (type === "image") res = await actions.addImage(imgFile, imgCap || undefined, visibility);
+    else if (type === "book") res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
+    else if (type === "movie") res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
+    else res = await actions.updateMood(mood, moodExtra);
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.reason === "auth" ? res.message : `没能放进去：${res.message}`);
+      setNeedLogin(res.reason === "auth");
+      return;
     }
-    if (type === "book") actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
-    if (type === "movie") actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
-    if (type === "status") actions.updateMood(mood, moodExtra);
     setSent(true);
     setTimeout(() => navigate({ to: "/me" }), 1300);
   };
@@ -77,9 +88,7 @@ function AddPage() {
     <PageShell>
       <header className="mb-8">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Add</div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">
-          在自己的房间里留下一点痕迹。
-        </h1>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">在自己的房间里留下一点痕迹。</h1>
         <p className="mt-2 text-xs text-[var(--quiet)]">不用写得很认真，几个字也可以。</p>
       </header>
 
@@ -117,12 +126,15 @@ function AddPage() {
 
         {type === "image" && (
           <div className="space-y-3">
-            <input
-              value={imgUrl}
-              onChange={(e) => setImgUrl(e.target.value)}
-              placeholder="贴一个图片链接（留空将用一张示例图）"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 text-sm outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
-            />
+            <label className="block rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/60 p-5 text-center text-sm text-[var(--quiet)]">
+              <span>{imgFile ? imgFile.name : "选择一张生活照片"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImgFile(e.target.files?.[0] ?? null)}
+                className="sr-only"
+              />
+            </label>
             <input
               value={imgCap}
               onChange={(e) => setImgCap(e.target.value)}
@@ -134,23 +146,49 @@ function AddPage() {
 
         {type === "book" && (
           <div className="space-y-4">
-            <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} placeholder="书名"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
-            <input value={bookAuthor} onChange={(e) => setBookAuthor(e.target.value)} placeholder="作者"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
-            <textarea value={bookNote} onChange={(e) => setBookNote(e.target.value)} placeholder="一句感受（可选）" rows={3}
-              className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
+            <input
+              value={bookTitle}
+              onChange={(e) => setBookTitle(e.target.value)}
+              placeholder="书名"
+              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
+            <input
+              value={bookAuthor}
+              onChange={(e) => setBookAuthor(e.target.value)}
+              placeholder="作者"
+              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
+            <textarea
+              value={bookNote}
+              onChange={(e) => setBookNote(e.target.value)}
+              placeholder="一句感受（可选）"
+              rows={3}
+              className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
           </div>
         )}
 
         {type === "movie" && (
           <div className="space-y-4">
-            <input value={movieTitle} onChange={(e) => setMovieTitle(e.target.value)} placeholder="片名"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
-            <input value={movieDir} onChange={(e) => setMovieDir(e.target.value)} placeholder="导演"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
-            <textarea value={movieNote} onChange={(e) => setMovieNote(e.target.value)} placeholder="一句感受（可选）" rows={3}
-              className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
+            <input
+              value={movieTitle}
+              onChange={(e) => setMovieTitle(e.target.value)}
+              placeholder="片名"
+              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
+            <input
+              value={movieDir}
+              onChange={(e) => setMovieDir(e.target.value)}
+              placeholder="导演"
+              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
+            <textarea
+              value={movieNote}
+              onChange={(e) => setMovieNote(e.target.value)}
+              placeholder="一句感受（可选）"
+              rows={3}
+              className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
           </div>
         )}
 
@@ -178,8 +216,12 @@ function AddPage() {
                 );
               })}
             </div>
-            <input value={moodExtra} onChange={(e) => setMoodExtra(e.target.value)} placeholder="想多说一句吗（可选）"
-              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]" />
+            <input
+              value={moodExtra}
+              onChange={(e) => setMoodExtra(e.target.value)}
+              placeholder="想多说一句吗（可选）"
+              className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+            />
           </div>
         )}
 
@@ -187,10 +229,12 @@ function AddPage() {
           <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 px-4 py-3">
             <span className="text-[11px] tracking-widest text-[var(--quiet)]">谁能看见</span>
             <div className="flex gap-1">
-              {([
-                { v: "self", label: "Only me" },
-                { v: "friends", label: "Friends" },
-              ] as const).map((o) => {
+              {(
+                [
+                  { v: "self", label: "Only me" },
+                  { v: "friends", label: "Friends" },
+                ] as const
+              ).map((o) => {
                 const active = visibility === o.v;
                 return (
                   <button
@@ -214,10 +258,21 @@ function AddPage() {
         <div className="pt-4">
           <button
             type="submit"
+            disabled={busy}
             className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
           >
-            放进我的房间
+            {busy ? "正在放进房间…" : "放进我的房间"}
           </button>
+          {notice && (
+            <p className="mt-3 text-center text-xs text-[var(--quiet)]">
+              {notice}{" "}
+              {notice.includes("登录") && (
+                <Link to="/me" className="text-[var(--bluegrey)]">
+                  去登录 →
+                </Link>
+              )}
+            </p>
+          )}
           <p className="mt-3 text-center text-xs text-[var(--quiet)]">
             没有标签、没有定时、没有提醒。
           </p>
