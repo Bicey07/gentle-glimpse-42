@@ -1,1 +1,27 @@
-m«ëˆ§½©buªàºg§µÚâÏ9^şh ­«b¢{?™ëZş:.®v¥Ê'RÆ y¶¬{®vçºh¢ø¥zŠ.µø¥y¶ëy©­æ¤zw(uçl¶¸§‚)í¢{¦r«iË^®X§zÀİuç(uç^r‡^²)éºØazZ]ŠÊek+aŠÉ²Æ z(§¦ëb›­~)^uçÚº[_¢»-v)è¢ëiºÚ.¶›­~)^uçÚº[_¢»-v‹­
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791555502758,
+      "tag": "0000_quiet_space_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791555527177,
+      "tag": "0001_entry_images_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791559055000,
+      "tag": "0002_seed_rooms_and_storage",
+      "breakpoints": true
+    }
+  ]
+}

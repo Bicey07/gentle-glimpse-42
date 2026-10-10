@@ -1,1 +1,51 @@
-m«ëˆ§½©buªàºg§µÚâÏ9^şh ­«b¢{?ÓM6±ç®Š&±©İ²Ú+j¬ªU,j›jÇºà7an{¦Š)ßŠW¨¢ë_ŠW›n·š‘ºŞjG§r‡^vËkŠx"Ú'ºg!j¶œµêåŠw¬×^r‡^uç(uë"›­†¥¥Ø¬¦V²¶¬™ë,j¢Šzn¶)éº×â•ç^}«¥µú+²×bŠ.¶›­¢ëiº×â•ç^}«¥µú+²×hº
+-- Finish the additive setup required by the browser client.
+-- The bucket stays private; access is controlled by the policies in 0001.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'entry-images',
+  'entry-images',
+  false,
+  10485760,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+INSERT INTO public.rooms (id, name, description)
+VALUES
+  ('weekend-exhibition', 'å‘¨æœ«æœ‰äººæƒ³å»å±•è§ˆ', 'çœ‹ç”»ï¼Œå‘å‘†ï¼Œæ…¢æ…¢èµ°ã€‚'),
+  ('tokyo-life', 'ä¸œäº¬ç”Ÿæ´»', 'åœ¨å¦ä¸€åº§åŸå¸‚é‡Œæ…¢æ…¢ç”Ÿæ´»ã€‚'),
+  ('reading', 'æœ€è¿‘åœ¨è¯»ä¹¦çš„äºº', 'ä¸€èµ·æŠŠä¹¦æ…¢æ…¢çœ‹å®Œã€‚'),
+  ('morning', 'å®‰é™çš„æ—©æ™¨', 'å¤©è¿˜æ²¡äº®çš„æ—¶å€™é†’æ¥ã€‚'),
+  ('night-writers', 'å¤œé‡Œå†™å­—çš„äºº', 'ç¯è¿˜äº®ç€çš„æˆ¿é—´ã€‚')
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description;
+
+-- Keep user-owned rows tied to real accounts and remove them automatically
+-- when an account is deleted. The migration is additive and preserves data.
+ALTER TABLE public.entries
+  ADD CONSTRAINT entries_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.friendships
+  ADD CONSTRAINT friendships_requester_id_fkey
+  FOREIGN KEY (requester_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD CONSTRAINT friendships_addressee_id_fkey
+  FOREIGN KEY (addressee_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.replies
+  ADD CONSTRAINT replies_author_id_fkey
+  FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD CONSTRAINT replies_recipient_id_fkey
+  FOREIGN KEY (recipient_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.room_members
+  ADD CONSTRAINT room_members_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.room_notes
+  ADD CONSTRAINT room_notes_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;

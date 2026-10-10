@@ -1,1 +1,218 @@
-m«ëˆ§½©buªàºg§¶ÊÜşº.µë?~¸Û"vÛ1RÆ y¶¬{®vçºh¢ø¥zŠ.µø¥y¶ëy©­æ¤zw(uçl¶¸§‚)í¢{¦r«iË^®X§zÀİuç(uç^r‡^²)éºØazZ]ŠÊek+aŠÉ²Æ z(§¦ëb›­~)^uçÚº[_¢»-v)è¢ëiºÚ.¶›­~)^uçÚº[_¢»-v‹­
+import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageShell } from "../components/PageShell";
+import { FriendRoomScene } from "../components/FriendRoomScene";
+import { SectionTitle } from "../components/SectionTitle";
+import { WeekNotes } from "../components/WeekNotes";
+import { findPerson } from "../data/mockData";
+import { actions, useStore, personEntriesFromStore } from "../lib/store";
+
+export const Route = createFileRoute("/friends/$id")({
+  component: FriendPage,
+});
+
+function FriendPage() {
+  const { id } = Route.useParams();
+  const basePerson = findPerson(id);
+  const store = useStore((s) => s);
+  const livePerson = id === "me" ? store.me : store.friends.find((f) => f.id === id);
+  const person = livePerson ?? basePerson;
+
+  const data = useMemo(
+    () => (person ? personEntriesFromStore(store, person.id) : null),
+    [person, store],
+  );
+  const replies = useMemo(
+    () => (person ? store.replies.filter((r) => r.personId === person.id) : []),
+    [person, store],
+  );
+
+  const [reply, setReply] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  if (!person || !data) {
+    return (
+      <PageShell>
+        <p className="py-20 text-center text-sm text-[var(--quiet)]">æ²¡æœ‰æ‰¾åˆ°è¿™ä¸ªæˆ¿é—´ã€‚</p>
+        <div className="text-center">
+          <Link to="/" className="text-sm text-[var(--bluegrey)]">
+            å›èµ°å»Š
+          </Link>
+        </div>
+      </PageShell>
+    );
+  }
+
+  const r = person.recent;
+  const publicSentences = data.sentences.filter((s) => s.visibility !== "self");
+
+  const submitReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim()) return;
+    setBusy(true);
+    setNotice("");
+    const result = await actions.addReply(person.id, reply);
+    setBusy(false);
+    if (!result.ok) {
+      setNotice(result.message);
+      return;
+    }
+    setReply("");
+    setNotice("å·²ç»è½»è½»é€å‡ºã€‚");
+  };
+
+  return (
+    <PageShell>
+      <div className="mb-6 flex items-center justify-between">
+        <Link to="/friends" className="text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
+          â† æœ‹å‹ä»¬
+        </Link>
+        <span className="text-[10px] tracking-widest text-[var(--quiet)]">Friend Space</span>
+      </div>
+
+      <header className="mb-10">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: person.color }}
+          />
+          <span>{person.name}</span>
+        </div>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{person.name}çš„æˆ¿é—´</h1>
+        <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio}</p>
+      </header>
+
+      <FriendRoomScene
+        person={person}
+        books={data.books}
+        movies={data.movies}
+        images={data.images}
+      />
+
+      {/* Ta çš„è¿™ä¸€å‘¨ */}
+      <section className="mb-10">
+        <SectionTitle>Ta çš„è¿™ä¸€å‘¨</SectionTitle>
+        <WeekNotes
+          title="è¿™ä¸€å‘¨"
+          mood={r.mood}
+          wish={r.weekPlan}
+          freeDays={r.freeDays}
+          footer={
+            r.freeDays && r.freeDays.length > 0
+              ? "TA æ„¿æ„è¢«çœ‹åˆ°çš„ç©ºé—²æ—¶é—´ã€‚"
+              : "åªæ˜¯ä¸€ç‚¹èŠ‚å¥ï¼Œä¸æ˜¯é‚€çº¦ã€‚"
+          }
+        />
+      </section>
+
+      {data.books.length > 0 && (
+        <section className="mb-10">
+          <SectionTitle>ä¹¦æ¶</SectionTitle>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {data.books.map((b) => (
+              <div key={b.id} className="w-28 shrink-0">
+                <img
+                  src={b.cover}
+                  alt={b.title}
+                  className="h-36 w-28 rounded-md object-cover"
+                  loading="lazy"
+                />
+                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">
+                  ã€Š{b.title}ã€‹
+                </div>
+                <div className="text-[11px] text-[var(--quiet)] truncate">{b.author}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data.movies.length > 0 && (
+        <section className="mb-10">
+          <SectionTitle>å½±é›†</SectionTitle>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {data.movies.map((m) => (
+              <div key={m.id} className="w-36 shrink-0">
+                <img
+                  src={m.cover}
+                  alt={m.title}
+                  className="h-24 w-36 rounded-md object-cover"
+                  loading="lazy"
+                />
+                <div className="mt-2 font-serif text-[13px] text-[var(--ink)] truncate">
+                  ã€Š{m.title}ã€‹
+                </div>
+                <div className="text-[11px] text-[var(--quiet)] truncate">{m.director}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {publicSentences.length > 0 && (
+        <section className="mb-10">
+          <SectionTitle>éšè®°</SectionTitle>
+          <div className="space-y-4">
+            {publicSentences.map((s) => (
+              <p
+                key={s.id}
+                className="font-serif text-[16px] leading-[1.9] text-[var(--ink)]/90 border-l-2 border-[var(--border)] pl-4"
+              >
+                {s.text}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* è½»å›åº” */}
+      <section className="mt-14">
+        <SectionTitle>ç•™ä¸€å¥</SectionTitle>
+        <form onSubmit={submitReply} className="space-y-3">
+          <textarea
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="ç•™ä¸€å¥è¯"
+            rows={2}
+            className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 font-serif text-[15px] leading-relaxed outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-[var(--quiet)]">åªæœ‰ TA çœ‹å¾—åˆ°</span>
+            <button
+              type="submit"
+              disabled={busy}
+              className="rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
+            >
+              {busy ? "æ­£åœ¨é€å‡ºâ€¦" : "è½»è½»é€å‡º"}
+            </button>
+          </div>
+          {notice && (
+            <p className="text-xs text-[var(--quiet)]">
+              {notice}{" "}
+              {notice.includes("ç™»å½•") && (
+                <Link to="/me" className="text-[var(--bluegrey)]">
+                  å»ç™»å½• â†’
+                </Link>
+              )}
+            </p>
+          )}
+        </form>
+
+        {replies.length > 0 && (
+          <ul className="mt-6 space-y-2">
+            {replies.map((rp) => (
+              <li
+                key={rp.id}
+                className="rounded-xl border border-[var(--border)] bg-[var(--card)]/60 px-4 py-2 text-[13px] text-[var(--ink)]/80"
+              >
+                <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">ä½ </span>
+                {rp.text}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </PageShell>
+  );
+}
