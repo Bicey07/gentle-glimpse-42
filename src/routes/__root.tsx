@@ -10,6 +10,8 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { supabase } from "@/integrations/supabase/client";
+import { session } from "../lib/store";
 
 function NotFoundComponent() {
   return (
@@ -138,9 +140,23 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <PwaRegistration />
+      <AuthSync />
       <Outlet />
     </QueryClientProvider>
   );
+}
+
+// Single auth listener: guests see the mock demo, signed-in users see Cloud data.
+function AuthSync() {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => session.setUser(data.session?.user ?? null));
+    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED" && event !== "INITIAL_SESSION") return;
+      session.setUser(s?.user ?? null);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+  return null;
 }
 
 function PwaRegistration() {
