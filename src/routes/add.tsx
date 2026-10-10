@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { actions, type ActionResult, type Visibility } from "../lib/store";
+import { actions, useStore, type ActionResult, type Visibility } from "../lib/store";
 
 type PostType = "sentence" | "image" | "book" | "movie" | "status";
 
@@ -256,25 +256,25 @@ function AddPage() {
         )}
 
         <div className="pt-4">
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
-          >
-            {busy ? "正在放进房间…" : "放进我的房间"}
-          </button>
-          {notice && (
-            <p className="mt-3 text-center text-xs text-[var(--quiet)]">
-              {notice}{" "}
-              {notice.includes("登录") && (
-                <Link to="/me" className="text-[var(--bluegrey)]">
+          {error && (
+            <p role="alert" className="mb-3 text-center text-xs text-[var(--bluegrey)]">
+              {error}
+              {needLogin && (
+                <Link to="/auth" className="ml-2 underline underline-offset-4 hover:text-[var(--ink)]">
                   去登录 →
                 </Link>
               )}
             </p>
           )}
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+          >
+            {busy ? "正在放进房间…" : "放进我的房间"}
+          </button>
           <p className="mt-3 text-center text-xs text-[var(--quiet)]">
-            没有标签、没有定时、没有提醒。
+            {mode === "demo" ? "你正在看示例房间，登录后才能留下自己的痕迹。" : "没有标签、没有定时、没有提醒。"}
           </p>
         </div>
       </form>
