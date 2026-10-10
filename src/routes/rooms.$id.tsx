@@ -140,7 +140,21 @@ function RoomPage() {
 
       <section className="mb-10">
         <SectionTitle>最近的纸条</SectionTitle>
-        {roomNotes.length === 0 ? (
+        {loading ? (
+          <p className="py-6 text-center text-xs text-[var(--quiet)]">正在推开门…</p>
+        ) : mode === "cloud" && !isMember ? (
+          <div className="py-6 text-center text-xs text-[var(--quiet)]">
+            <p>纸条只有房间里的人能看到。</p>
+            <button
+              type="button"
+              onClick={join}
+              disabled={busy}
+              className="mt-4 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+            >
+              {busy ? "稍等…" : "进入这个房间"}
+            </button>
+          </div>
+        ) : roomNotes.length === 0 ? (
           <p className="py-6 text-center text-xs text-[var(--quiet)]">这里还很安静。</p>
         ) : (
           <ul className="space-y-3">
