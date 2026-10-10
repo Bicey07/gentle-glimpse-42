@@ -1,9 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import type { Trace } from "../lib/types";
 import { findPerson } from "../data/mockData";
+import { useStore } from "../lib/store";
 
 export function TraceLine({ trace }: { trace: Trace }) {
-  const person = findPerson(trace.personId);
+  const me = useStore((s) => s.me);
+  const friends = useStore((s) => s.friends);
+  const mode = useStore((s) => s.mode);
+  const person =
+    trace.personId === "me"
+      ? me
+      : friends.find((f) => f.id === trace.personId) ?? (mode === "demo" ? findPerson(trace.personId) : undefined);
   if (!person) return null;
 
   const Inner = (
