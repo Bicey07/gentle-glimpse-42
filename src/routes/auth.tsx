@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/auth")({
@@ -33,6 +33,11 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     setMsg(null);
+    if (!isSupabaseConfigured()) {
+      setBusy(false);
+      setMsg({ kind: "err", text: "云端登录正在配置中；现在可以先以游客身份浏览 Demo。" });
+      return;
+    }
     if (mode === "in") {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       setBusy(false);
