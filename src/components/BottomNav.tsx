@@ -25,7 +25,7 @@ export function BottomNav() {
               aria-current={active ? "page" : undefined}
               className="flex flex-col items-center gap-1 text-[11px] tracking-wider transition-opacity"
               style={{
-                color: active ? "#f4e7cd" : "#b8ccc7",
+                color: active ? "#58536c" : "#737d90",
               }}
             >
               <span className="font-serif text-base leading-none">{it.glyph}</span>

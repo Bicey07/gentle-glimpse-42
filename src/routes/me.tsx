@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
+import { MyRoomScene } from "../components/MyRoomScene";
 import { WeekNotes } from "../components/WeekNotes";
 import { useStore } from "../lib/store";
 
@@ -77,6 +78,8 @@ function MePage() {
           {person.bio || tx("这里可以慢慢放下生活的痕迹。")}
         </p>
       </header>
+
+      <MyRoomScene person={me} books={bookshelf} movies={films} images={images} />
 
       <Link to="/memories" className="mb-10 block rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6 transition hover:border-[var(--bluegrey)]">
         <div className="text-[10px] tracking-[.25em] text-[var(--quiet)]">PRIVATE MEMORY</div>

@@ -60,11 +60,13 @@ function SpacePage() {
         </p>
       </header>
 
-      {mode === "demo" ? (
+      <MyRoomScene person={me} books={books} movies={movies} images={images} />
+
+      {mode === "demo" && (
         <section className="mb-12 rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-7">
           <h2 className="font-serif text-xl">{tx("先登录，再开始记录")}</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--quiet)]">
-            {tx("这里不会展示虚拟人物或示例内容。登录后，你的房间、好友和记录会从真实数据库读取。")}
+            {tx("小屋已经布置好了。登录后，把你的书、电影和生活照片放进来。")}
           </p>
           <Link
             to="/auth"
@@ -73,8 +75,6 @@ function SpacePage() {
             {tx("登录 / 注册")}
           </Link>
         </section>
-      ) : (
-        <MyRoomScene person={me} books={books} movies={movies} images={images} />
       )}
 
       {/* Quick actions */}

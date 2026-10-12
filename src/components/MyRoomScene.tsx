@@ -1,23 +1,59 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "../lib/i18n";
 import type { BookEntry, ImageEntry, MovieEntry, Person } from "../lib/types";
 
+type Spot = "窗边" | "书架" | "小银幕" | "唱片机" | "桌上便签";
 export function MyRoomScene({ person, books, movies, images }: { person: Person; books: BookEntry[]; movies: MovieEntry[]; images: ImageEntry[] }) {
   const { t: tx } = useI18n();
-  const [selected, setSelected] = useState<{ title: string; meta: string; note?: string } | null>(null);
-  const things = [
-    ...books.slice(0, 4).map((b) => ({ id: b.id, src: b.cover, title: `《${b.title}》`, meta: b.author, note: b.note, kind: "book" })),
-    ...movies.slice(0, 4).map((m) => ({ id: m.id, src: m.cover, title: `《${m.title}》`, meta: m.director, note: m.note, kind: "movie" })),
-    ...images.slice(0, 4).map((i) => ({ id: i.id, src: i.url, title: i.caption || tx("一张照片"), meta: tx("生活痕迹"), note: i.caption, kind: "image" })),
-  ];
-  return <section className="relative mb-12 overflow-hidden rounded-[34px] border border-[var(--border)] bg-[#eee8dc] p-5 shadow-[0_18px_50px_rgba(63,54,43,.08)] sm:p-8">
-    <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#d8c8b8]/60 blur-2xl" />
-    <div className="relative flex items-end justify-between"><div><div className="text-[10px] tracking-[.35em] text-[var(--quiet)]">MY LITTLE HOUSE</div><h2 className="mt-2 font-serif text-3xl text-[var(--ink)]">{person.name || tx("我的小屋")}</h2><p className="mt-1 text-xs text-[var(--quiet)]">{tx("把看过的、遇见的，慢慢放在这里。")}</p></div><div className="hidden h-20 w-16 rounded-t-full border border-[#b6a796] bg-[#e3d6c7] sm:block" /></div>
-    <div className="relative mt-7 grid min-h-[265px] grid-cols-4 items-end gap-3 rounded-[26px] border border-[#c8b9a8] bg-[#f5efe6] p-4 sm:gap-5 sm:p-6">
-      <div className="absolute left-5 top-5 h-20 w-24 rounded-t-full border border-[#bcae9d] bg-[#dfe1d5]/70" />
-      <div className="absolute bottom-0 left-1/2 h-28 w-20 -translate-x-1/2 rounded-t-[45px] bg-[#d5c3b3]/60" />
-      {things.length === 0 ? <div className="col-span-4 z-10 self-center text-center text-sm text-[var(--quiet)]">{tx("小屋还空着，从记录页放一件东西进来。")}</div> : things.map((x, i) => <button key={x.id} type="button" onClick={() => setSelected(x)} aria-label={x.title} className={`group relative z-10 w-full max-w-[116px] justify-self-center text-left transition duration-300 hover:-translate-y-2 ${i % 2 ? "rotate-2" : "-rotate-2"}`}><div className="aspect-[3/4] overflow-hidden rounded-sm border-[5px] border-[#f8f3ea] bg-[#d8cbbb] shadow-[0_8px_16px_rgba(58,45,34,.18)]"><img src={x.src} alt="" className="h-full w-full object-cover" loading="lazy" /></div><div className="mt-2 truncate font-serif text-[11px] text-[var(--ink)]">{x.title}</div><div className="truncate text-[10px] text-[var(--quiet)]">{x.meta}</div></button>)}
+  const [spot, setSpot] = useState<Spot>("窗边");
+  const [selected, setSelected] = useState<{ title: string; note?: string } | null>(null);
+  const recent = person.recent;
+  const details: Record<Spot, string> = {
+    窗边: recent?.mood || tx("窗外有远山，屋里有一盏温柔的灯。"),
+    书架: books[0]?.title || recent?.reading?.title || tx("书架已经安好，等你放进第一本喜欢的书。"),
+    小银幕: movies[0]?.title || recent?.watching?.title || tx("留一面银幕，给下次想看的电影。"),
+    唱片机: recent?.listening?.title || tx("唱片机静静等着你喜欢的声音。"),
+    桌上便签: recent?.sentence || recent?.weekPlan || tx("今天想留下什么？几个字也可以。"),
+  };
+  const things = spot === "书架" ? books.map(b => ({ id:b.id, src:b.cover, title:b.title, note:b.note })) : spot === "小银幕" ? movies.map(m => ({ id:m.id, src:m.cover, title:m.title, note:m.note })) : spot === "窗边" ? images.map(i => ({ id:i.id, src:i.url, title:i.caption || tx("一张照片"), note:i.caption })) : [];
+  return <section className="painted-room" aria-label={tx("我的小屋")}>
+    <div className="painted-room__heading"><div><p className="text-[9px] tracking-[.3em] text-[var(--quiet)]">A ROOM OF ONE’S OWN</p><h2 className="mt-2 font-serif text-xl">{tx("我的小屋")} · 春水</h2></div><span className="text-xs text-[var(--quiet)]">{tx("点一点房间里的物件")}</span></div>
+    <div className="painted-room__scene">
+      <svg viewBox="0 0 800 520" role="img" aria-label="浅粉墙面、浅蓝月窗、远山、木书架、软榻、茶桌、唱片机与记忆柜组成的中式小屋">
+        <defs>
+          <linearGradient id="room-wall" x2="0" y2="1"><stop stopColor="#fff4f2"/><stop offset="1" stopColor="#f2dce7"/></linearGradient>
+          <linearGradient id="room-sky" x2="0" y2="1"><stop stopColor="#cee4f5"/><stop offset="1" stopColor="#fce8ed"/></linearGradient>
+          <pattern id="room-paper" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0 3h4m8 9h4" stroke="#af91aa" strokeOpacity=".07"/></pattern>
+          <clipPath id="room-moon"><circle cx="325" cy="170" r="112"/></clipPath>
+        </defs>
+        <path d="M0 0H800V365H0Z" fill="url(#room-wall)"/>
+        <path d="M0 365H800V520H0Z" fill="#e9dce4"/>
+        <g stroke="#b59da9" strokeWidth="1" opacity=".55"><path d="M0 402H800M0 452H800M0 510H800M100 365L0 520M280 365L230 520M460 365L485 520M640 365L765 520"/></g>
+        <path d="M18 0V365H782V0M18 27H782" fill="none" stroke="#ba9a9e" strokeWidth="9"/>
+        <path d="M27 0V365M773 0V365M20 38H780" stroke="#efd3ca" strokeWidth="3"/>
+        <circle cx="325" cy="170" r="119" fill="#f8f0e9" stroke="#b59aa5" strokeWidth="3"/>
+        <g clipPath="url(#room-moon)"><path d="M208 55H442V288H208Z" fill="url(#room-sky)"/><circle cx="357" cy="112" r="27" fill="#fff7ed"/><path d="M190 237Q243 129 284 207Q334 108 377 202Q407 174 465 240V296H190Z" fill="#aec8df"/><path d="M185 268Q259 186 304 254Q367 194 447 256V290H185Z" fill="#c4d9e7"/><path d="M205 262Q302 245 448 272M208 280Q325 260 444 282" fill="none" stroke="#fcf2ed" strokeWidth="3"/><path d="M260 50V290M391 50V290M205 175H445" stroke="#bca4b2" strokeWidth="3"/></g>
+        <path d="M182 41Q213 107 179 265L143 277Q168 156 145 41ZM466 41Q444 142 472 265L506 277Q480 143 511 41Z" fill="#d7e5f3" stroke="#a8b5ce"/>
+        <path d="M155 49Q182 158 155 259M173 48Q198 150 173 250M491 49Q468 147 491 258" fill="none" stroke="#b7c8db"/>
+        <g stroke="#a48b98" strokeWidth="2" fill="#e8c6be"><path d="M60 175H151V372H60Z"/><path d="M65 182H146V366H65Z" fill="#f8e8e5"/><path d="M60 231H151M60 292H151M60 351H151"/><path d="M67 368V382M144 368V382"/></g>
+        <g stroke="#a597ae" strokeWidth="1"><path d="M73 191h13v38H73Z" fill="#cadcea"/><path d="M91 185h12v44H91Z" fill="#ecc4cf"/><path d="M107 195h12v34h-12Z" fill="#f2d3bf"/><path d="M123 187h12v42h-12Z" fill="#d4cce4"/><path d="M75 252h58v10H75Zm4 12h55v11H79Zm-5 13h53v11H74Z" fill="#c4d8e5"/></g>
+        <g fill="#efc4b6" stroke="#b497a1"><path d="M96 310Q82 343 111 343Q134 342 119 310Z"/><path d="M99 308h18v6H99Z"/></g>
+        <g stroke="#97a9b4" fill="none"><path d="M109 309Q107 285 123 280M109 302Q88 290 85 285"/><path d="M123 280q-14-8-12 7q12 5 12-7M85 285q14-10 14 5q-10 5-14-5" fill="#c8dce0"/></g>
+        <g stroke="#b49ba6" strokeWidth="2"><path d="M553 100H713V224H553Z" fill="#edcbbf"/><path d="M563 110H703V214H563Z" fill="#e3edf6"/><path d="M568 197L608 153L640 183L669 141L700 197Z" fill="#c4d6e5" stroke="none"/><circle cx="594" cy="135" r="12" fill="#fff2e8" stroke="none"/><path d="M549 95H717M549 229H717"/></g>
+        <g stroke="#b499a7" strokeWidth="2"><path d="M214 290H450V380H214Z" fill="#c4d7e8"/><path d="M204 327Q330 312 461 327V367H204Z" fill="#dce9f6"/><path d="M211 371V388M450 371V388"/><path d="M226 291Q242 267 285 282L291 320H225Z" fill="#f4d8e3"/><path d="M368 290Q405 274 430 288L437 319H362Z" fill="#eec8be"/><path d="M293 319L314 369H412L397 318Z" fill="#f3dfec"/><path d="M307 328l13 30m2-31 12 31m2-31 11 31m3-31 10 31m3-31 10 31" stroke="#d1b4ca" strokeWidth="1"/></g>
+        <ellipse cx="363" cy="434" rx="168" ry="54" fill="#d3e3f2" stroke="#b6c7d9"/><ellipse cx="363" cy="434" rx="155" ry="45" fill="none" stroke="#f6f3f7" strokeWidth="2"/>
+        <g stroke="#b299a5" strokeWidth="2"><path d="M291 402V451M432 400V445"/><path d="M275 387Q354 362 450 383L445 411Q355 427 278 410Z" fill="#efcdc2"/><path d="M275 387Q357 408 450 383" fill="none"/><ellipse cx="345" cy="386" rx="27" ry="11" fill="#fcf2ec"/><path d="M332 381q-3-28 18-27q21 0 17 27Z" fill="#cadce8"/><path d="M363 359q22-2 14 14h-12M331 363l-14-5 12 14M335 353h19" fill="none"/><path d="M392 381l23 2-4 13-25-3Z" fill="#fff6eb"/><path d="M392 386l16 2m-17 2 11 1" strokeWidth="1"/></g>
+        <path d="M227 435Q260 418 286 442L278 464Q242 473 224 453Z" fill="#f1cbd6" stroke="#baa2b2"/><path d="M447 431Q478 419 501 437L496 457Q464 467 443 448Z" fill="#f4d0c4" stroke="#baa2b2"/>
+        <g stroke="#b49ca7" strokeWidth="2"><path d="M563 296H731V402H563Z" fill="#d2e0ee"/><path d="M572 308H722V349H572Zm0 48H722V390H572Z" fill="#f4e5e9"/><path d="M565 404V417M728 404V417M557 290H737V302H557Z" fill="#e7c6bf"/><path d="M645 310V388"/><circle cx="635" cy="328" r="2"/><circle cx="656" cy="328" r="2"/></g>
+        <g stroke="#9e94a6"><path d="M590 254H697V285H590Z" fill="#efc6bb"/><ellipse cx="629" cy="268" rx="26" ry="10" fill="#73869c"/><ellipse cx="629" cy="268" rx="15" ry="6" fill="none" stroke="#c6dce9"/><ellipse cx="629" cy="268" rx="5" ry="2" fill="#f3d5d9"/><path d="M683 259L675 275H664" strokeWidth="3" fill="none"/></g>
+        <g stroke="#ac93a3" fill="#f6d6cf"><path d="M520 37V65M506 66Q520 57 534 66L540 108Q520 118 500 108Z"/><path d="M520 112V145l-8 25 15 4-7-29M507 74h27M503 100h34" fill="none"/></g>
+        <path d="M0 0H800V520H0Z" fill="url(#room-paper)" pointerEvents="none"/>
+      </svg>
+      {([{name:"窗边",left:25,top:10,width:32,height:44},{name:"书架",left:7,top:33,width:13,height:39},{name:"小银幕",left:69,top:18,width:21,height:27},{name:"唱片机",left:73,top:47,width:16,height:10},{name:"桌上便签",left:34,top:70,width:23,height:12}] as const).map(item => <button key={item.name} type="button" className="room-hotspot" style={{left:`${item.left}%`,top:`${item.top}%`,width:`${item.width}%`,height:`${item.height}%`}} aria-label={tx(item.name)} aria-pressed={spot === item.name} onClick={() => {setSpot(item.name);setSelected(null);}} />)}
+      <Link to="/memories" className="room-hotspot" style={{left:"70%",top:"57%",width:"23%",height:"23%"}} aria-label={tx("记忆胶囊")} />
     </div>
-    {selected && <div className="relative mt-4 rounded-2xl border border-[#c8b9a8] bg-[#f8f3ea]/80 p-4"><button type="button" onClick={() => setSelected(null)} className="float-right text-xs text-[var(--quiet)]">×</button><div className="font-serif text-base text-[var(--ink)]">{selected.title}</div><div className="mt-1 text-xs text-[var(--quiet)]">{selected.meta}</div>{selected.note && <p className="mt-3 text-sm leading-relaxed text-[var(--ink)]/75">{selected.note}</p>}</div>}
+    <div className="painted-room__spots" aria-label={tx("房间")}>{(Object.keys(details) as Spot[]).map(s => <button key={s} type="button" aria-pressed={spot === s} onClick={() => { setSpot(s); setSelected(null); }}>{tx(s)}</button>)}<Link to="/memories" className="rounded-full border border-[var(--border)] bg-[#f8ded6] px-4 py-2 text-xs">{tx("记忆胶囊")} ↗</Link></div>
+    <div className="painted-room__detail" aria-live="polite"><p className="font-serif text-base">{selected?.title || details[spot]}</p>{selected?.note && <p className="mt-2 text-sm text-[var(--quiet)]">{selected.note}</p>}{things.length > 0 && <div className="painted-room__objects">{things.map(x => <button key={x.id} onClick={() => setSelected(x)}><img src={x.src} alt="" loading="lazy"/>{x.title}</button>)}</div>}<Link to="/add" search={{ type:spot === "书架" ? "book" : spot === "小银幕" ? "movie" : "sentence" }} className="mt-4 inline-block text-xs text-[var(--bluegrey)]">{tx("留下生活痕迹")} ＋</Link></div>
   </section>;
 }
