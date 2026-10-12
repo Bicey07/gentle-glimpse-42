@@ -12,7 +12,7 @@ export function MyRoomScene({ person, books, movies, images }: { person: Person;
   ];
   return <section className="relative mb-12 overflow-hidden rounded-[34px] border border-[var(--border)] bg-[#eee8dc] p-5 shadow-[0_18px_50px_rgba(63,54,43,.08)] sm:p-8">
     <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#d8c8b8]/60 blur-2xl" />
-    <div className="relative flex items-end justify-between"><div><div className="text-[10px] tracking-[.35em] text-[var(--quiet)]">MY LITTLE HOUSE</div><h2 className="mt-2 font-serif text-3xl text-[var(--ink)]">{person.name || tx("我的小屋")}</h2><p className="mt-1 text-xs text-[var(--quiet)]">{tx("把看过的、遇见的，慢慢放在这里。")}</p></div><div className="hidden h-20 w-16 rounded-t-full border border-[#b6a796] bg-[#e3d6c7] sm:block" />}</div>
+    <div className="relative flex items-end justify-between"><div><div className="text-[10px] tracking-[.35em] text-[var(--quiet)]">MY LITTLE HOUSE</div><h2 className="mt-2 font-serif text-3xl text-[var(--ink)]">{person.name || tx("我的小屋")}</h2><p className="mt-1 text-xs text-[var(--quiet)]">{tx("把看过的、遇见的，慢慢放在这里。")}</p></div><div className="hidden h-20 w-16 rounded-t-full border border-[#b6a796] bg-[#e3d6c7] sm:block" /></div>
     <div className="relative mt-7 grid min-h-[265px] grid-cols-4 items-end gap-3 rounded-[26px] border border-[#c8b9a8] bg-[#f5efe6] p-4 sm:gap-5 sm:p-6">
       <div className="absolute left-5 top-5 h-20 w-24 rounded-t-full border border-[#bcae9d] bg-[#dfe1d5]/70" />
       <div className="absolute bottom-0 left-1/2 h-28 w-20 -translate-x-1/2 rounded-t-[45px] bg-[#d5c3b3]/60" />
