@@ -1,14 +1,12 @@
 import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { MemoryRoom } from "../components/MemoryRoom";
 import { MySpaceCard } from "../components/MySpaceCard";
 import { FriendSpaceCard } from "../components/FriendSpaceCard";
 import { RoomCard } from "../components/RoomCard";
 import { TraceLine } from "../components/TraceLine";
 import { SectionTitle } from "../components/SectionTitle";
 import { useStore } from "../lib/store";
-import { rooms as allRooms } from "../data/mockData";
 import type { Room } from "../lib/types";
 
 export const Route = createFileRoute("/")({
@@ -35,8 +33,9 @@ const quickActions = [
 function SpacePage() {
   const { t: tx } = useI18n();
   const me = useStore((s) => s.me);
+  const mode = useStore((s) => s.mode);
   const friends = useStore((s) => s.friends);
-  const rooms: Room[] = allRooms;
+  const rooms: Room[] = useStore((s) => s.rooms);
   const traces = useStore((s) => s.traces);
 
   const featuredFriends = friends.slice(0, 4);
@@ -57,7 +56,20 @@ function SpacePage() {
         </p>
       </header>
 
-      <MemoryRoom name={me.name} />
+      {mode === "demo" ? (
+        <section className="mb-12 rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-7">
+          <h2 className="font-serif text-xl">{tx("先登录，再开始记录")}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[var(--quiet)]">
+            {tx("这里不会展示虚拟人物或示例内容。登录后，你的房间、好友和记录会从真实数据库读取。")}
+          </p>
+          <Link
+            to="/auth"
+            className="mt-6 inline-flex rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm text-[var(--paper)]"
+          >
+            {tx("登录 / 注册")}
+          </Link>
+        </section>
+      ) : null}
 
       {/* Quick actions */}
       <section className="mb-14">
@@ -76,53 +88,61 @@ function SpacePage() {
         </div>
       </section>
 
-      <section className="mb-16">
-        <SectionTitle>My Space</SectionTitle>
-        <MySpaceCard person={me} />
-      </section>
+      {mode === "cloud" && (
+        <section className="mb-16">
+          <SectionTitle>My Space</SectionTitle>
+          <MySpaceCard person={me} />
+        </section>
+      )}
 
-      <section className="mb-16">
-        <SectionTitle
-          aside={
-            <Link to="/friends" className="hover:text-[var(--ink)]">
-              {tx("所有朋友 →")}
-            </Link>
-          }
-        >
-          Friends' Spaces
-        </SectionTitle>
-        <div className="grid grid-cols-2 gap-3">
-          {featuredFriends.map((f) => (
-            <FriendSpaceCard key={f.id} person={f} />
-          ))}
-        </div>
-      </section>
+      {mode === "cloud" && (
+        <section className="mb-16">
+          <SectionTitle
+            aside={
+              <Link to="/friends" className="hover:text-[var(--ink)]">
+                {tx("所有朋友 →")}
+              </Link>
+            }
+          >
+            Friends' Spaces
+          </SectionTitle>
+          <div className="grid grid-cols-2 gap-3">
+            {featuredFriends.map((f) => (
+              <FriendSpaceCard key={f.id} person={f} />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section className="mb-16">
-        <SectionTitle
-          aside={
-            <Link to="/rooms" className="hover:text-[var(--ink)]">
-              {tx("更多 →")}
-            </Link>
-          }
-        >
-          Shared Rooms
-        </SectionTitle>
-        <div>
-          {featuredRooms.map((r) => (
-            <RoomCard key={r.id} room={r} />
-          ))}
-        </div>
-      </section>
+      {mode === "cloud" && (
+        <section className="mb-16">
+          <SectionTitle
+            aside={
+              <Link to="/rooms" className="hover:text-[var(--ink)]">
+                {tx("更多 →")}
+              </Link>
+            }
+          >
+            Shared Rooms
+          </SectionTitle>
+          <div>
+            {featuredRooms.map((r) => (
+              <RoomCard key={r.id} room={r} />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section className="mb-10">
-        <SectionTitle>{tx("最近的回声")}</SectionTitle>
-        <div className="opacity-80">
-          {recentTraces.map((t) => (
-            <TraceLine key={t.id} trace={t} />
-          ))}
-        </div>
-      </section>
+      {mode === "cloud" && (
+        <section className="mb-10">
+          <SectionTitle>{tx("最近的回声")}</SectionTitle>
+          <div className="opacity-80">
+            {recentTraces.map((t) => (
+              <TraceLine key={t.id} trace={t} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <p className="pt-6 text-center text-[11px] tracking-widest text-[var(--quiet)]">
         {tx("—— 在这里，可以慢慢待着 ——")}

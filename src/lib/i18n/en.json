@@ -423,5 +423,13 @@
   "有人刚刚来过": "Someone just stopped by",
   "有人在这里": "Someone is here",
   "三五个人在这里": "A few people here",
-  "一些人在这里": "Some people here"
+  "一些人在这里": "Some people here",
+  "登录后，这里会显示真实的朋友房间。": "Sign in to see your real friends' rooms here.",
+  "本地创建的房间": "Room created locally",
+  "登录后创建真实房间": "Sign in to create a real room",
+  "房间和成员会保存到数据库。游客不会看到预置房间。": "Rooms and members are saved to the database. Guests do not see seeded rooms.",
+  "账户": "Account",
+  "登录 / 注册": "Sign in / Sign up",
+  "先登录，再开始记录": "Sign in before you start recording",
+  "这里不会展示虚拟人物或示例内容。登录后，你的房间、好友和记录会从真实数据库读取。": "No fictional people or sample content is shown here. After you sign in, your rooms, friends, and records come from the real database."
 }

@@ -2,7 +2,7 @@ import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { actions, useStore } from "../../lib/store";
 import { useJourney } from "../../lib/rooms/store";
 import { errorText, roomSchema } from "../../lib/rooms/model";
 import { JourneyButton, JourneyLabel, fieldClass } from "./JourneyUi";
@@ -37,8 +37,13 @@ export function CreateRoom() {
             description,
             color,
           });
-          journey.join(room);
-          void navigate({ to: "/rooms/$id", params: { id: room.id } });
+          void actions.createRoom({ ...room, presence: "房间成员" }).then((result) => {
+            if (!result.ok) {
+              setError(result.message);
+              return;
+            }
+            void navigate({ to: "/rooms/$id", params: { id: room.id } });
+          });
         } catch (error) {
           setError(errorText(error));
         }

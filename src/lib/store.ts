@@ -1,21 +1,5 @@
 import { useSyncExternalStore } from "react";
-import {
-  me as initialMe,
-  friends as initialFriends,
-  books as initialBooks,
-  movies as initialMovies,
-  sentences as initialSentences,
-  images as initialImages,
-  traces as initialTraces,
-} from "../data/mockData";
-import type {
-  Person,
-  BookEntry,
-  MovieEntry,
-  SentenceEntry,
-  ImageEntry,
-  Trace,
-} from "./types";
+import type { Person, BookEntry, MovieEntry, SentenceEntry, ImageEntry, Trace } from "./types";
 import * as cloud from "./cloud";
 
 export type Visibility = "self" | "friends";
@@ -38,9 +22,7 @@ export interface RoomNote {
 
 export type Mode = "demo" | "cloud";
 
-export type ActionResult =
-  | { ok: true }
-  | { ok: false; reason: "auth" | "error"; message: string };
+export type ActionResult = { ok: true } | { ok: false; reason: "auth" | "error"; message: string };
 
 interface State {
   mode: Mode;
@@ -60,18 +42,18 @@ interface State {
   myRooms: string[];
   incomingRequests: cloud.FriendRequest[];
   outgoingPending: string[];
+  rooms: import("./types").Room[];
 }
 
 const STORAGE_KEY = "quiet-space:v2";
 
-const seededRoomNotes: RoomNote[] = [
-  { id: "rn_seed1", roomId: "tokyo-life", fromName: "林一", text: "今天去了下北泽的旧书店，买到了一本很旧的诗集。", at: Date.now() - 1000 * 60 * 60 * 20 },
-  { id: "rn_seed2", roomId: "tokyo-life", fromName: "阿野", text: "早上的中目黑很安静，河边一个人在跑步。", at: Date.now() - 1000 * 60 * 60 * 8 },
-  { id: "rn_seed3", roomId: "tokyo-life", fromName: "小满", text: "在便利店买了一个饭团当晚饭，也很好。", at: Date.now() - 1000 * 60 * 60 * 2 },
-  { id: "rn_seed4", roomId: "weekend-exhibition", fromName: "青羽", text: "周六下午想去看那个安藤忠雄的展，一个人也可以。", at: Date.now() - 1000 * 60 * 60 * 30 },
-  { id: "rn_seed5", roomId: "weekend-exhibition", fromName: "林一", text: "如果那天下雨，展后可以喝杯咖啡。", at: Date.now() - 1000 * 60 * 60 * 12 },
-  { id: "rn_seed6", roomId: "weekend-exhibition", fromName: "安安", text: "我可能周日下午有空，也想去看看。", at: Date.now() - 1000 * 60 * 60 * 3 },
-];
+const emptyMe: Person = {
+  id: "me",
+  name: "",
+  bio: "",
+  color: "#8fa3b5",
+  recent: {},
+};
 
 const initial: State = {
   mode: "demo",
@@ -79,22 +61,22 @@ const initial: State = {
   email: null,
   loading: false,
   loadError: null,
-  me: { ...initialMe },
-  friends: initialFriends.map((f) => ({ ...f })),
-  books: [...initialBooks],
-  movies: [...initialMovies],
-  sentences: initialSentences.map((s) => ({ ...s, visibility: "friends" as Visibility })),
-  images: initialImages.map((i) => ({ ...i, visibility: "friends" as Visibility })),
-  traces: [...initialTraces],
+  me: emptyMe,
+  friends: [],
+  books: [],
+  movies: [],
+  sentences: [],
+  images: [],
+  traces: [],
   replies: [],
-  roomNotes: seededRoomNotes,
+  roomNotes: [],
   myRooms: [],
   incomingRequests: [],
   outgoingPending: [],
+  rooms: [],
 };
 
-// Demo (guest) data: mock data plus whatever an earlier demo session saved
-// locally. This is never uploaded to Cloud.
+// Guests start empty. User-created cloud data is loaded only after Supabase Auth.
 function loadPersisted(): State {
   if (typeof window === "undefined") return initial;
   try {
@@ -104,18 +86,24 @@ function loadPersisted(): State {
     if (!parsed || typeof parsed !== "object") return initial;
     return {
       ...initial,
-      me: { ...initial.me, ...(parsed.me ?? {}), recent: { ...initial.me.recent, ...(parsed.me?.recent ?? {}) } },
-      friends: Array.isArray(parsed.friends) && parsed.friends.length ? parsed.friends : initial.friends,
+      me: {
+        ...initial.me,
+        ...(parsed.me ?? {}),
+        recent: { ...initial.me.recent, ...(parsed.me?.recent ?? {}) },
+      },
+      friends: Array.isArray(parsed.friends) ? parsed.friends : [],
       books: Array.isArray(parsed.books) ? parsed.books : initial.books,
       movies: Array.isArray(parsed.movies) ? parsed.movies : initial.movies,
       sentences: Array.isArray(parsed.sentences) ? parsed.sentences : initial.sentences,
       images: Array.isArray(parsed.images) ? parsed.images : initial.images,
       traces: Array.isArray(parsed.traces) ? parsed.traces : initial.traces,
       replies: Array.isArray(parsed.replies) ? parsed.replies : [],
-      roomNotes: Array.isArray(parsed.roomNotes) ? parsed.roomNotes : initial.roomNotes,
+      roomNotes: Array.isArray(parsed.roomNotes) ? parsed.roomNotes : [],
     };
   } catch {
-    try { window.localStorage.removeItem(STORAGE_KEY); } catch {}
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {}
     return initial;
   }
 }
@@ -153,11 +141,16 @@ const needAuth: ActionResult = { ok: false, reason: "auth", message: "登录后�
 
 function verbFor(kind: string, detail?: string | null): { verb: string; detail?: string } {
   switch (kind) {
-    case "sentence": return { verb: "留下了一句话", detail: detail ?? undefined };
-    case "image": return { verb: "留下了一张照片" };
-    case "book": return { verb: "在读", detail: detail ? `《${detail}》` : undefined };
-    case "movie": return { verb: "在看", detail: detail ? `《${detail}》` : undefined };
-    default: return { verb: "更新了本周状态", detail: detail ?? undefined };
+    case "sentence":
+      return { verb: "留下了一句话", detail: detail ?? undefined };
+    case "image":
+      return { verb: "留下了一张照片" };
+    case "book":
+      return { verb: "在读", detail: detail ? `《${detail}》` : undefined };
+    case "movie":
+      return { verb: "在看", detail: detail ? `《${detail}》` : undefined };
+    default:
+      return { verb: "更新了本周状态", detail: detail ?? undefined };
   }
 }
 
@@ -170,20 +163,46 @@ function applySnapshot(snap: cloud.CloudSnapshot) {
     loadError: null,
     me: snap.me,
     friends: snap.friends,
-    books: e.filter((x) => x.kind === "book").map((x) => ({
-      id: x.id, personId: x.personId, title: x.title ?? "", author: x.creator || "—",
-      cover: cloud.BOOK_COVER, note: x.note ?? undefined, visibility: vis(x.visibility),
-    })),
-    movies: e.filter((x) => x.kind === "movie").map((x) => ({
-      id: x.id, personId: x.personId, title: x.title ?? "", director: x.creator || "—",
-      cover: cloud.MOVIE_COVER, note: x.note ?? undefined, visibility: vis(x.visibility),
-    })),
-    sentences: e.filter((x) => x.kind === "sentence").map((x) => ({
-      id: x.id, personId: x.personId, text: x.text ?? "", visibility: vis(x.visibility), at: Date.parse(x.created_at),
-    })),
-    images: e.filter((x) => x.kind === "image" && x.imageUrl).map((x) => ({
-      id: x.id, personId: x.personId, url: x.imageUrl!, caption: x.caption ?? undefined, visibility: vis(x.visibility),
-    })),
+    books: e
+      .filter((x) => x.kind === "book")
+      .map((x) => ({
+        id: x.id,
+        personId: x.personId,
+        title: x.title ?? "",
+        author: x.creator || "—",
+        cover: cloud.BOOK_COVER,
+        note: x.note ?? undefined,
+        visibility: vis(x.visibility),
+      })),
+    movies: e
+      .filter((x) => x.kind === "movie")
+      .map((x) => ({
+        id: x.id,
+        personId: x.personId,
+        title: x.title ?? "",
+        director: x.creator || "—",
+        cover: cloud.MOVIE_COVER,
+        note: x.note ?? undefined,
+        visibility: vis(x.visibility),
+      })),
+    sentences: e
+      .filter((x) => x.kind === "sentence")
+      .map((x) => ({
+        id: x.id,
+        personId: x.personId,
+        text: x.text ?? "",
+        visibility: vis(x.visibility),
+        at: Date.parse(x.created_at),
+      })),
+    images: e
+      .filter((x) => x.kind === "image" && x.imageUrl)
+      .map((x) => ({
+        id: x.id,
+        personId: x.personId,
+        url: x.imageUrl!,
+        caption: x.caption ?? undefined,
+        visibility: vis(x.visibility),
+      })),
     traces: e
       .filter((x) => x.visibility === "friends" || x.personId === "me")
       .slice(0, 12)
@@ -191,7 +210,14 @@ function applySnapshot(snap: cloud.CloudSnapshot) {
         const isSelf = x.visibility === "self";
         const v = isSelf
           ? { verb: "写了一句只给自己的话", detail: undefined }
-          : verbFor(x.kind, x.kind === "book" || x.kind === "movie" ? x.title : x.kind === "status" ? x.mood : x.text);
+          : verbFor(
+              x.kind,
+              x.kind === "book" || x.kind === "movie"
+                ? x.title
+                : x.kind === "status"
+                  ? x.mood
+                  : x.text,
+            );
         return { id: x.id, personId: x.personId, ...v };
       }),
     replies: snap.replies,
@@ -199,6 +225,7 @@ function applySnapshot(snap: cloud.CloudSnapshot) {
     myRooms: snap.myRooms,
     incomingRequests: snap.incomingRequests,
     outgoingPending: snap.outgoingPending,
+    rooms: snap.rooms,
   };
 }
 
@@ -237,7 +264,14 @@ export const session = {
       loading: true,
       me: { ...initial.me, recent: {} },
       friends: [],
-      books: [], movies: [], sentences: [], images: [], traces: [], replies: [], roomNotes: [],
+      rooms: [],
+      books: [],
+      movies: [],
+      sentences: [],
+      images: [],
+      traces: [],
+      replies: [],
+      roomNotes: [],
     };
     emit();
     void refresh();
@@ -259,15 +293,30 @@ async function run(fn: (uid: string) => Promise<void>): Promise<ActionResult> {
 
 export const actions = {
   addSentence(text: string, visibility: Visibility) {
-    if (!text.trim()) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "写一点什么吧，几个字也可以。" });
-    return run((uid) => cloud.insertEntry({ kind: "sentence", text: text.trim(), visibility }, uid));
+    if (!text.trim())
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "写一点什么吧，几个字也可以。",
+      });
+    return run((uid) =>
+      cloud.insertEntry({ kind: "sentence", text: text.trim(), visibility }, uid),
+    );
   },
   addImage(file: File | null, caption: string | undefined, visibility: Visibility) {
-    if (!file) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "先选一张照片。" });
+    if (!file)
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "先选一张照片。",
+      });
     return run(async (uid) => {
       const path = await cloud.uploadImage(file, uid);
       try {
-        await cloud.insertEntry({ kind: "image", image_path: path, caption: caption?.trim() || null, visibility }, uid);
+        await cloud.insertEntry(
+          { kind: "image", image_path: path, caption: caption?.trim() || null, visibility },
+          uid,
+        );
       } catch (e) {
         await cloud.removeImage(path);
         throw e;
@@ -275,22 +324,69 @@ export const actions = {
     });
   },
   addBook(title: string, author: string, note: string | undefined, visibility: Visibility) {
-    if (!title.trim()) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "写一下书名吧。" });
-    return run((uid) => cloud.insertEntry({ kind: "book", title: title.trim(), creator: author.trim() || null, note: note?.trim() || null, visibility }, uid));
+    if (!title.trim())
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "写一下书名吧。",
+      });
+    return run((uid) =>
+      cloud.insertEntry(
+        {
+          kind: "book",
+          title: title.trim(),
+          creator: author.trim() || null,
+          note: note?.trim() || null,
+          visibility,
+        },
+        uid,
+      ),
+    );
   },
   addMovie(title: string, director: string, note: string | undefined, visibility: Visibility) {
-    if (!title.trim()) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "写一下片名吧。" });
-    return run((uid) => cloud.insertEntry({ kind: "movie", title: title.trim(), creator: director.trim() || null, note: note?.trim() || null, visibility }, uid));
+    if (!title.trim())
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "写一下片名吧。",
+      });
+    return run((uid) =>
+      cloud.insertEntry(
+        {
+          kind: "movie",
+          title: title.trim(),
+          creator: director.trim() || null,
+          note: note?.trim() || null,
+          visibility,
+        },
+        uid,
+      ),
+    );
   },
   updateMood(mood: string, extra?: string) {
-    return run((uid) => cloud.insertEntry({ kind: "status", mood, text: extra?.trim() || null, visibility: "friends" }, uid));
+    return run((uid) =>
+      cloud.insertEntry(
+        { kind: "status", mood, text: extra?.trim() || null, visibility: "friends" },
+        uid,
+      ),
+    );
   },
   addReply(personId: string, text: string) {
-    if (!text.trim()) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "写一句再送出吧。" });
+    if (!text.trim())
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "写一句再送出吧。",
+      });
     return run((uid) => cloud.insertReply(uid, personId, text.trim()));
   },
   addRoomNote(roomId: string, text: string) {
-    if (!text.trim()) return Promise.resolve<ActionResult>({ ok: false, reason: "error", message: "写一句再留下吧。" });
+    if (!text.trim())
+      return Promise.resolve<ActionResult>({
+        ok: false,
+        reason: "error",
+        message: "写一句再留下吧。",
+      });
     return run(async (uid) => {
       if (!state.myRooms.includes(roomId)) await cloud.joinRoom(uid, roomId);
       await cloud.insertRoomNote(uid, roomId, text.trim());
@@ -298,6 +394,9 @@ export const actions = {
   },
   joinRoom(roomId: string) {
     return run((uid) => cloud.joinRoom(uid, roomId));
+  },
+  createRoom(room: import("./types").Room) {
+    return run((uid) => cloud.createRoom(room, uid));
   },
   requestFriend(code: string) {
     return run((uid) => cloud.requestFriend(uid, code));

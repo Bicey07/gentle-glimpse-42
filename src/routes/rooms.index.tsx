@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { RoomCard } from "../components/RoomCard";
 import { SectionTitle } from "../components/SectionTitle";
-import { rooms, friends, me } from "../data/mockData";
 import { CreateRoom } from "../components/rooms/CreateRoom";
 import { RoomPassport } from "../components/rooms/RoomPassport";
 import { useJourney } from "../lib/rooms/store";
@@ -17,11 +16,15 @@ function RoomsPage() {
   const { t: tx } = useI18n();
   const scope = useStore((s) => s.userId ?? "guest");
   const journey = useJourney(scope);
-  const customRooms = journey.state.rooms.filter(
-    (room) => !rooms.some((seed) => seed.id === room.id),
-  );
+  const rooms = useStore((s) => s.rooms);
+  const mode = useStore((s) => s.mode);
+  const customRooms: typeof journey.state.rooms = [];
   // 把所有人的空闲日聚合成一个柔和的「大家的时间」
-  const everyone = [me, ...friends];
+  const everyone: {
+    name: string;
+    color: string;
+    recent?: { freeDays?: string[]; weekPlan?: string };
+  }[] = [];
   const slots = everyone
     .flatMap((p) =>
       (p.recent?.freeDays ?? []).map((d) => ({ name: p.name, day: d, color: p.color })),
@@ -49,10 +52,27 @@ function RoomsPage() {
         <p className="mt-2 text-sm text-[var(--quiet)]">{tx("里面有几个人在安静地待着。")}</p>
       </header>
 
-      <RoomPassport />
-      <div className="mb-10">
-        <CreateRoom />
-      </div>
+      {mode === "cloud" ? (
+        <>
+          <RoomPassport />
+          <div className="mb-10">
+            <CreateRoom />
+          </div>
+        </>
+      ) : (
+        <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
+          <h2 className="font-serif text-xl">{tx("登录后创建真实房间")}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[var(--quiet)]">
+            {tx("房间和成员会保存到数据库。游客不会看到预置房间。")}
+          </p>
+          <Link
+            to="/auth"
+            className="mt-5 inline-flex rounded-full bg-[var(--ink)] px-4 py-2 text-xs text-[var(--paper)]"
+          >
+            {tx("登录 / 注册")}
+          </Link>
+        </section>
+      )}
       {customRooms.length > 0 && (
         <section className="mb-10">
           <SectionTitle>{tx("我创建或加入的小世界")}</SectionTitle>

@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
-import { rooms, friends, me } from "../data/mockData";
 import { actions, useStore } from "../lib/store";
 import { useJourney } from "../lib/rooms/store";
 import { RoomJourney } from "../components/rooms/RoomJourney";
@@ -12,22 +11,13 @@ export const Route = createFileRoute("/rooms/$id")({
   component: RoomPage,
 });
 
-const roomPeople: Record<string, string[]> = {
-  "tokyo-life": ["林一", "阿野", "小满"],
-  "weekend-exhibition": ["青羽", "林一", "安安"],
-  reading: ["阿野", "木子"],
-  morning: ["安安", "小满"],
-  "night-writers": ["木子", "林一"],
-};
-
 function RoomPage() {
   const { t: tx } = useI18n();
   const { id } = Route.useParams();
   const scope = useStore((s) => s.userId ?? "guest");
   const journey = useJourney(scope);
-  const seededRoom = rooms.find((r) => r.id === id);
   const localRoom = journey.state.rooms.find((r) => r.id === id);
-  const room = seededRoom ?? (localRoom ? { ...localRoom, presence: "本地演示房间" } : undefined);
+  const room = localRoom ? { ...localRoom, presence: tx("本地创建的房间") } : undefined;
 
   // Select the whole array (stable ref); derive filtered list in useMemo.
   const allNotes = useStore((s) => s.roomNotes);
@@ -44,7 +34,7 @@ function RoomPage() {
   const myRooms = useStore((s) => s.myRooms);
   const loading = useStore((s) => s.loading);
 
-  const everyone = useMemo(() => [me, ...friends], []);
+  const everyone: Array<{ name: string; color: string; recent?: { freeDays?: string[] } }> = [];
   const freeSlots = useMemo(
     () =>
       everyone
@@ -71,8 +61,8 @@ function RoomPage() {
     );
   }
 
-  const people = roomPeople[room.id] ?? [];
-  const isExhibition = room.id === "weekend-exhibition";
+  const people: string[] = [];
+  const isExhibition = false;
 
   const isMember = mode === "cloud" && myRooms.includes(room.id);
 
@@ -128,14 +118,14 @@ function RoomPage() {
         room={{ id: room.id, name: room.name, description: room.description, color: room.color }}
       />
 
-      {seededRoom && (
+      {room && (
         <>
           <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
             <div className="mb-3 text-[10px] tracking-[0.28em] text-[var(--quiet)]">
               {tx("这里的人")}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(people.length ? people : [tx("几位朋友")]).map((n) => (
+              {people.map((n) => (
                 <span
                   key={n}
                   className="rounded-full border border-[var(--border)] bg-[var(--paper)] px-3 py-1 text-[12px] text-[var(--ink)]/80"

@@ -90,3 +90,7 @@ This project is connected to Lovable. Changes pushed to `main` remain available 
 Use **中文 / English** at the top of any page to switch the interface. Chinese is the default. The preference is saved in this browser and synced between open tabs; switching does not reset forms or alter user content, Room Keys, or memory proofs. If browser storage is disabled, switching still works for the current session.
 
 The built-in English catalog is `src/lib/i18n/en.json`; Chinese UI strings are the keys. Add both the source string and its English translation for new UI text. Use `useI18n().t` at render time, with named placeholders for values, and leave authored notes, room names, and other user content unchanged.
+For real accounts and database-backed content, copy .env.example to .env
+and fill in the Supabase publishable key for project redrpvkluvqdwduanfer.
+Apply the migration in supabase/migrations/ before starting the app. Guests
+see an empty state; the app does not seed fictional people or posts.

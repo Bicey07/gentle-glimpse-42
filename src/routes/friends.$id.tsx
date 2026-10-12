@@ -5,7 +5,6 @@ import { PageShell } from "../components/PageShell";
 import { FriendRoomScene } from "../components/FriendRoomScene";
 import { SectionTitle } from "../components/SectionTitle";
 import { WeekNotes } from "../components/WeekNotes";
-import { findPerson } from "../data/mockData";
 import { actions, useStore, personEntriesFromStore } from "../lib/store";
 
 export const Route = createFileRoute("/friends/$id")({
@@ -15,11 +14,10 @@ export const Route = createFileRoute("/friends/$id")({
 function FriendPage() {
   const { t: tx } = useI18n();
   const { id } = Route.useParams();
-  const basePerson = findPerson(id);
   const store = useStore((s) => s);
   const livePerson = id === "me" ? store.me : store.friends.find((f) => f.id === id);
   const mode = store.mode;
-  const person = livePerson ?? (mode === "demo" ? basePerson : undefined);
+  const person = livePerson;
 
   const data = useMemo(
     () => (person ? personEntriesFromStore(store, person.id) : null),

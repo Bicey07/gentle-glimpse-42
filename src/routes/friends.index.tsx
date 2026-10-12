@@ -29,7 +29,7 @@ function FriendsPage() {
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{tx("朋友们各自的房间")}</h1>
         <p className="mt-2 text-sm text-[var(--quiet)]">
           {mode === "demo"
-            ? tx("这些是示例房间。轻轻推开任意一扇门看看。")
+            ? tx("登录后，这里会显示真实的朋友房间。")
             : tx("轻轻推开任意一扇门看看。")}
         </p>
       </header>

@@ -7,7 +7,6 @@ import { JourneyButton, JourneyLabel, LocalNotice } from "../components/rooms/Jo
 import { decodeInvite, errorText } from "../lib/rooms/model";
 import { useJourney } from "../lib/rooms/store";
 import { useStore } from "../lib/store";
-import { rooms } from "../data/mockData";
 
 export const Route = createFileRoute("/invite")({
   validateSearch: (search: Record<string, unknown>): { room?: string } => ({
@@ -25,14 +24,6 @@ function InvitationPage() {
   let room;
   try {
     room = decodeInvite(encoded ?? "");
-    const known = rooms.find((r) => r.id === room!.id);
-    if (
-      known &&
-      (known.name !== room.name ||
-        known.description !== room.description ||
-        known.color !== room.color)
-    )
-      throw new Error("邀请中的房间信息不一致。");
   } catch (error) {
     return (
       <PageShell>
