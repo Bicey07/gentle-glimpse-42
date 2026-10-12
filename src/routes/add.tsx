@@ -42,9 +42,11 @@ function AddPage() {
   const [bookTitle, setBookTitle] = useState("");
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookNote, setBookNote] = useState("");
+  const [bookCover, setBookCover] = useState<File | null>(null);
   const [movieTitle, setMovieTitle] = useState("");
   const [movieDir, setMovieDir] = useState("");
   const [movieNote, setMovieNote] = useState("");
+  const [moviePoster, setMoviePoster] = useState<File | null>(null);
   const [mood, setMood] = useState("平静");
   const [moodExtra, setMoodExtra] = useState("");
 
@@ -59,9 +61,9 @@ function AddPage() {
     else if (type === "image")
       res = await actions.addImage(imgFile, imgCap || undefined, visibility);
     else if (type === "book")
-      res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
+      res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility, bookCover);
     else if (type === "movie")
-      res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
+      res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility, moviePoster);
     else res = await actions.updateMood(mood, moodExtra);
     setBusy(false);
     if (!res.ok) {
@@ -172,6 +174,10 @@ function AddPage() {
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
+            <label className="block rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/60 p-4 text-center text-sm text-[var(--quiet)]">
+              <span>{bookCover ? bookCover.name : tx("上传书封（可选）")}</span>
+              <input type="file" accept="image/*" onChange={(e) => setBookCover(e.target.files?.[0] ?? null)} className="sr-only" />
+            </label>
           </div>
         )}
 
@@ -196,6 +202,10 @@ function AddPage() {
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
+            <label className="block rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/60 p-4 text-center text-sm text-[var(--quiet)]">
+              <span>{moviePoster ? moviePoster.name : tx("上传电影海报（可选）")}</span>
+              <input type="file" accept="image/*" onChange={(e) => setMoviePoster(e.target.files?.[0] ?? null)} className="sr-only" />
+            </label>
           </div>
         )}
 

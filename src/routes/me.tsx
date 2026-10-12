@@ -2,7 +2,6 @@ import { useI18n, moodLabel } from "@/lib/i18n";
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { MemoryRoom } from "../components/MemoryRoom";
 import { SectionTitle } from "../components/SectionTitle";
 import { WeekNotes } from "../components/WeekNotes";
 import { useStore } from "../lib/store";
@@ -79,7 +78,12 @@ function MePage() {
         </p>
       </header>
 
-      <MemoryRoom name={person.name || tx("你的房间")} />
+      <Link to="/memories" className="mb-10 block rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6 transition hover:border-[var(--bluegrey)]">
+        <div className="text-[10px] tracking-[.25em] text-[var(--quiet)]">PRIVATE MEMORY</div>
+        <div className="mt-2 font-serif text-xl text-[var(--ink)]">{tx("记忆胶囊")}</div>
+        <div className="mt-2 text-sm text-[var(--quiet)]">{tx("把只属于你的记忆，收进一张安静的唱片。")}</div>
+        <div className="mt-4 text-xs text-[var(--bluegrey)]">{tx("打开记忆胶囊 →")}</div>
+      </Link>
 
       <section className="mb-10 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center justify-between">

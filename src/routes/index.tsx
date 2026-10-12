@@ -1,7 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { MemoryRoom } from "../components/MemoryRoom";
+import { MyRoomScene } from "../components/MyRoomScene";
 import { MySpaceCard } from "../components/MySpaceCard";
 import { FriendSpaceCard } from "../components/FriendSpaceCard";
 import { RoomCard } from "../components/RoomCard";
@@ -38,6 +38,9 @@ function SpacePage() {
   const friends = useStore((s) => s.friends);
   const rooms: Room[] = useStore((s) => s.rooms);
   const traces = useStore((s) => s.traces);
+  const books = useStore((s) => s.books).filter((b) => b.personId === "me");
+  const movies = useStore((s) => s.movies).filter((m) => m.personId === "me");
+  const images = useStore((s) => s.images).filter((i) => i.personId === "me");
 
   const featuredFriends = friends.slice(0, 4);
   const featuredRooms = rooms.slice(0, 4);
@@ -71,7 +74,7 @@ function SpacePage() {
           </Link>
         </section>
       ) : (
-        <MemoryRoom name={me.name || tx("你的房间")} />
+        <MyRoomScene person={me} books={books} movies={movies} images={images} />
       )}
 
       {/* Quick actions */}

@@ -431,5 +431,17 @@
   "账户": "Account",
   "登录 / 注册": "Sign in / Sign up",
   "先登录，再开始记录": "Sign in before you start recording",
-  "这里不会展示虚拟人物或示例内容。登录后，你的房间、好友和记录会从真实数据库读取。": "No fictional people or sample content is shown here. After you sign in, your rooms, friends, and records come from the real database."
+  "这里不会展示虚拟人物或示例内容。登录后，你的房间、好友和记录会从真实数据库读取。": "No fictional people or sample content is shown here. After you sign in, your rooms, friends, and records come from the real database.",
+  "我的小屋": "My little house",
+  "把看过的、遇见的，慢慢放在这里。": "A place for what you have seen and found.",
+  "一张照片": "A photo",
+  "生活痕迹": "A trace of life",
+  "小屋还空着，从记录页放一件东西进来。": "Your little house is empty. Add something from the record page.",
+  "上传书封（可选）": "Upload a book cover (optional)",
+  "上传电影海报（可选）": "Upload a movie poster (optional)",
+  "记忆胶囊": "Memory capsules",
+  "把只属于你的记忆，收进一张安静的唱片。": "Keep your private memories in a quiet record.",
+  "打开记忆胶囊 →": "Open memory capsules →",
+  "← 我的房间": "← My room",
+  "PRIVATE MEMORY": "PRIVATE MEMORY"
 }

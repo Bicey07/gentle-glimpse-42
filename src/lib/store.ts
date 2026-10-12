@@ -170,7 +170,7 @@ function applySnapshot(snap: cloud.CloudSnapshot) {
         personId: x.personId,
         title: x.title ?? "",
         author: x.creator || "—",
-        cover: cloud.BOOK_COVER,
+        cover: x.imageUrl || cloud.BOOK_COVER,
         note: x.note ?? undefined,
         visibility: vis(x.visibility),
       })),
@@ -181,7 +181,7 @@ function applySnapshot(snap: cloud.CloudSnapshot) {
         personId: x.personId,
         title: x.title ?? "",
         director: x.creator || "—",
-        cover: cloud.MOVIE_COVER,
+        cover: x.imageUrl || cloud.MOVIE_COVER,
         note: x.note ?? undefined,
         visibility: vis(x.visibility),
       })),
@@ -323,45 +323,33 @@ export const actions = {
       }
     });
   },
-  addBook(title: string, author: string, note: string | undefined, visibility: Visibility) {
+  addBook(title: string, author: string, note: string | undefined, visibility: Visibility, coverFile?: File | null) {
     if (!title.trim())
       return Promise.resolve<ActionResult>({
         ok: false,
         reason: "error",
         message: "写一下书名吧。",
       });
-    return run((uid) =>
-      cloud.insertEntry(
-        {
-          kind: "book",
-          title: title.trim(),
-          creator: author.trim() || null,
-          note: note?.trim() || null,
-          visibility,
-        },
-        uid,
-      ),
-    );
+    return run(async (uid) => {
+      const path = coverFile ? await cloud.uploadImage(coverFile, uid) : undefined;
+      try {
+        await cloud.insertEntry({ kind: "book", title: title.trim(), creator: author.trim() || null, note: note?.trim() || null, image_path: path ?? null, visibility }, uid);
+      } catch (e) { if (path) await cloud.removeImage(path); throw e; }
+    });
   },
-  addMovie(title: string, director: string, note: string | undefined, visibility: Visibility) {
+  addMovie(title: string, director: string, note: string | undefined, visibility: Visibility, coverFile?: File | null) {
     if (!title.trim())
       return Promise.resolve<ActionResult>({
         ok: false,
         reason: "error",
         message: "写一下片名吧。",
       });
-    return run((uid) =>
-      cloud.insertEntry(
-        {
-          kind: "movie",
-          title: title.trim(),
-          creator: director.trim() || null,
-          note: note?.trim() || null,
-          visibility,
-        },
-        uid,
-      ),
-    );
+    return run(async (uid) => {
+      const path = coverFile ? await cloud.uploadImage(coverFile, uid) : undefined;
+      try {
+        await cloud.insertEntry({ kind: "movie", title: title.trim(), creator: director.trim() || null, note: note?.trim() || null, image_path: path ?? null, visibility }, uid);
+      } catch (e) { if (path) await cloud.removeImage(path); throw e; }
+    });
   },
   updateMood(mood: string, extra?: string) {
     return run((uid) =>

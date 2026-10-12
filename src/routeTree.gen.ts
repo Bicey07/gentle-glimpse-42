@@ -15,6 +15,7 @@ import { Route as AddRouteImport } from './routes/add'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as InviteRouteImport } from './routes/invite'
 import { Route as MeRouteImport } from './routes/me'
+import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as ApiRoomKeyRouteImport } from './routes/api.room-key'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsIdRouteImport } from './routes/friends.$id'
@@ -51,6 +52,11 @@ const MeRoute = MeRouteImport.update({
   path: '/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MemoriesRoute = MemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRoomKeyRoute = ApiRoomKeyRouteImport.update({
   id: '/api/room-key',
   path: '/api/room-key',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/memories': typeof MemoriesRoute
   '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/memories': typeof MemoriesRoute
   '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/memories': typeof MemoriesRoute
   '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/invite'
     | '/me'
+    | '/memories'
     | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/invite'
     | '/me'
+    | '/memories'
     | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/invite'
     | '/me'
+    | '/memories'
     | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   InviteRoute: typeof InviteRoute
   MeRoute: typeof MeRoute
+  MemoriesRoute: typeof MemoriesRoute
   ApiRoomKeyRoute: typeof ApiRoomKeyRoute
   FriendsIdRoute: typeof FriendsIdRoute
   RoomsIdRoute: typeof RoomsIdRoute
@@ -217,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/memories': {
+      id: '/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof MemoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/room-key': {
       id: '/api/room-key'
       path: '/api/room-key'
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   InviteRoute: InviteRoute,
   MeRoute: MeRoute,
+  MemoriesRoute: MemoriesRoute,
   ApiRoomKeyRoute: ApiRoomKeyRoute,
   FriendsIdRoute: FriendsIdRoute,
   RoomsIdRoute: RoomsIdRoute,
