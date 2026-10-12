@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
@@ -23,6 +24,7 @@ const types: { value: PostType; label: string }[] = [
 const moods = ["平静", "想念", "在恢复", "缓慢", "有点累", "明亮"];
 
 function AddPage() {
+  const { t: tx } = useI18n();
   const search = useSearch({ from: "/add" });
   const [type, setType] = useState<PostType>(search.type ?? "sentence");
   const [sent, setSent] = useState(false);
@@ -54,9 +56,12 @@ function AddPage() {
     setBusy(true);
     let res: ActionResult;
     if (type === "sentence") res = await actions.addSentence(text, visibility);
-    else if (type === "image") res = await actions.addImage(imgFile, imgCap || undefined, visibility);
-    else if (type === "book") res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
-    else if (type === "movie") res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
+    else if (type === "image")
+      res = await actions.addImage(imgFile, imgCap || undefined, visibility);
+    else if (type === "book")
+      res = await actions.addBook(bookTitle, bookAuthor, bookNote || undefined, visibility);
+    else if (type === "movie")
+      res = await actions.addMovie(movieTitle, movieDir, movieNote || undefined, visibility);
     else res = await actions.updateMood(mood, moodExtra);
     setBusy(false);
     if (!res.ok) {
@@ -72,12 +77,12 @@ function AddPage() {
     return (
       <PageShell>
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <div className="font-serif text-xl text-[var(--ink)]">已经放进你的房间。</div>
+          <div className="font-serif text-xl text-[var(--ink)]">{tx("已经放进你的房间。")}</div>
           <div className="mt-3 text-sm text-[var(--quiet)]">
-            {visibility === "self" ? "只有你能看到。" : "朋友走进来时会看到。"}
+            {visibility === "self" ? tx("只有你能看到。") : tx("朋友走进来时会看到。")}
           </div>
           <Link to="/me" className="mt-8 text-xs text-[var(--bluegrey)] hover:text-[var(--ink)]">
-            去看看我的房间 →
+            {tx("去看看我的房间 →")}
           </Link>
         </div>
       </PageShell>
@@ -88,8 +93,10 @@ function AddPage() {
     <PageShell>
       <header className="mb-8">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Add</div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">在自己的房间里留下一点痕迹。</h1>
-        <p className="mt-2 text-xs text-[var(--quiet)]">不用写得很认真，几个字也可以。</p>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">
+          {tx("在自己的房间里留下一点痕迹。")}
+        </h1>
+        <p className="mt-2 text-xs text-[var(--quiet)]">{tx("不用写得很认真，几个字也可以。")}</p>
       </header>
 
       <div className="-mx-1 mb-8 flex flex-wrap gap-2">
@@ -107,7 +114,7 @@ function AddPage() {
                 color: active ? "var(--paper)" : "var(--quiet)",
               }}
             >
-              {t.label}
+              {tx(t.label)}
             </button>
           );
         })}
@@ -118,7 +125,7 @@ function AddPage() {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="写一句给自己的话…"
+            placeholder={tx("写一句给自己的话…")}
             rows={5}
             className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 font-serif text-[17px] leading-relaxed outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
           />
@@ -127,7 +134,7 @@ function AddPage() {
         {type === "image" && (
           <div className="space-y-3">
             <label className="block rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/60 p-5 text-center text-sm text-[var(--quiet)]">
-              <span>{imgFile ? imgFile.name : "选择一张生活照片"}</span>
+              <span>{imgFile ? imgFile.name : tx("选择一张生活照片")}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -138,7 +145,7 @@ function AddPage() {
             <input
               value={imgCap}
               onChange={(e) => setImgCap(e.target.value)}
-              placeholder="给它一行说明（可选）"
+              placeholder={tx("给它一行说明（可选）")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 text-sm outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
           </div>
@@ -149,19 +156,19 @@ function AddPage() {
             <input
               value={bookTitle}
               onChange={(e) => setBookTitle(e.target.value)}
-              placeholder="书名"
+              placeholder={tx("书名")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
             <input
               value={bookAuthor}
               onChange={(e) => setBookAuthor(e.target.value)}
-              placeholder="作者"
+              placeholder={tx("作者")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
             <textarea
               value={bookNote}
               onChange={(e) => setBookNote(e.target.value)}
-              placeholder="一句感受（可选）"
+              placeholder={tx("一句感受（可选）")}
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
@@ -173,19 +180,19 @@ function AddPage() {
             <input
               value={movieTitle}
               onChange={(e) => setMovieTitle(e.target.value)}
-              placeholder="片名"
+              placeholder={tx("片名")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
             <input
               value={movieDir}
               onChange={(e) => setMovieDir(e.target.value)}
-              placeholder="导演"
+              placeholder={tx("导演")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
             <textarea
               value={movieNote}
               onChange={(e) => setMovieNote(e.target.value)}
-              placeholder="一句感受（可选）"
+              placeholder={tx("一句感受（可选）")}
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
@@ -199,7 +206,7 @@ function AddPage() {
                 const active = m === mood;
                 return (
                   <button
-                    key={m}
+                    key={tx(m)}
                     type="button"
                     onClick={() => setMood(m)}
                     className="rounded-full border px-4 py-1.5 text-sm transition-colors"
@@ -211,7 +218,7 @@ function AddPage() {
                         : "transparent",
                     }}
                   >
-                    {m}
+                    {tx(m)}
                   </button>
                 );
               })}
@@ -219,7 +226,7 @@ function AddPage() {
             <input
               value={moodExtra}
               onChange={(e) => setMoodExtra(e.target.value)}
-              placeholder="想多说一句吗（可选）"
+              placeholder={tx("想多说一句吗（可选）")}
               className="w-full border-b border-[var(--border)] bg-transparent py-2 outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
           </div>
@@ -227,12 +234,14 @@ function AddPage() {
 
         {type !== "status" && (
           <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 px-4 py-3">
-            <span className="text-[11px] tracking-widest text-[var(--quiet)]">谁能看见</span>
+            <span className="text-[11px] tracking-widest text-[var(--quiet)]">
+              {tx("谁能看见")}
+            </span>
             <div className="flex gap-1">
               {(
                 [
-                  { v: "self", label: "Only me" },
-                  { v: "friends", label: "Friends" },
+                  { v: "self", label: "只给自己" },
+                  { v: "friends", label: "好友可见" },
                 ] as const
               ).map((o) => {
                 const active = visibility === o.v;
@@ -247,7 +256,7 @@ function AddPage() {
                       color: active ? "var(--paper)" : "var(--quiet)",
                     }}
                   >
-                    {o.label}
+                    {tx(o.label)}
                   </button>
                 );
               })}
@@ -258,10 +267,13 @@ function AddPage() {
         <div className="pt-4">
           {error && (
             <p role="alert" className="mb-3 text-center text-xs text-[var(--bluegrey)]">
-              {error}
+              {tx(error)}
               {needLogin && (
-                <Link to="/auth" className="ml-2 underline underline-offset-4 hover:text-[var(--ink)]">
-                  去登录 →
+                <Link
+                  to="/auth"
+                  className="ml-2 underline underline-offset-4 hover:text-[var(--ink)]"
+                >
+                  {tx("去登录 →")}
                 </Link>
               )}
             </p>
@@ -271,10 +283,12 @@ function AddPage() {
             disabled={busy}
             className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
           >
-            {busy ? "正在放进房间…" : "放进我的房间"}
+            {busy ? tx("正在放进房间…") : tx("放进我的房间")}
           </button>
           <p className="mt-3 text-center text-xs text-[var(--quiet)]">
-            {mode === "demo" ? "你正在看示例房间，登录后才能留下自己的痕迹。" : "没有标签、没有定时、没有提醒。"}
+            {mode === "demo"
+              ? tx("你正在看示例房间，登录后才能留下自己的痕迹。")
+              : tx("没有标签、没有定时、没有提醒。")}
           </p>
         </div>
       </form>

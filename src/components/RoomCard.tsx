@@ -1,7 +1,9 @@
+import { useI18n } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import type { Room } from "../lib/types";
 
 export function RoomCard({ room }: { room: Room }) {
+  const { t: tx } = useI18n();
   return (
     <Link
       to="/rooms/$id"
@@ -17,7 +19,9 @@ export function RoomCard({ room }: { room: Room }) {
         <div className="font-serif text-[15px] text-[var(--ink)]">{room.name}</div>
         <div className="mt-0.5 truncate text-xs text-[var(--quiet)]">{room.description}</div>
       </div>
-      <div className="text-[11px] text-[var(--quiet)] shrink-0">{room.presence}</div>
+      <div className="max-w-24 text-right text-[11px] text-[var(--quiet)] shrink-0">
+        {tx(room.presence)}
+      </div>
     </Link>
   );
 }

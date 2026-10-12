@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { RoomCard } from "../components/RoomCard";
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/rooms/")({
 });
 
 function RoomsPage() {
+  const { t: tx } = useI18n();
   const scope = useStore((s) => s.userId ?? "guest");
   const journey = useJourney(scope);
   const customRooms = journey.state.rooms.filter(
@@ -37,14 +39,14 @@ function RoomsPage() {
         to="/"
         className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
       >
-        ← 走廊
+        {tx("← 走廊")}
       </Link>
       <header className="mb-10">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
           Shared Rooms
         </div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">一些小世界</h1>
-        <p className="mt-2 text-sm text-[var(--quiet)]">里面有几个人在安静地待着。</p>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{tx("一些小世界")}</h1>
+        <p className="mt-2 text-sm text-[var(--quiet)]">{tx("里面有几个人在安静地待着。")}</p>
       </header>
 
       <RoomPassport />
@@ -53,9 +55,9 @@ function RoomsPage() {
       </div>
       {customRooms.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>我创建或加入的小世界</SectionTitle>
+          <SectionTitle>{tx("我创建或加入的小世界")}</SectionTitle>
           {customRooms.map((room) => (
-            <RoomCard key={room.id} room={{ ...room, presence: "演示房间" }} />
+            <RoomCard key={room.id} room={{ ...room, presence: tx("演示房间") }} />
           ))}
         </section>
       )}
@@ -67,12 +69,16 @@ function RoomsPage() {
             <span className="text-[10px] tracking-[0.28em] text-[var(--quiet)]">
               EVERYONE'S WEEK
             </span>
-            <span className="font-serif text-[12px] italic text-[var(--quiet)]">大家的时间</span>
+            <span className="font-serif text-[12px] italic text-[var(--quiet)]">
+              {tx("大家的时间")}
+            </span>
           </div>
 
           {wishes.length > 0 && (
             <div className="mb-5">
-              <div className="mb-2 text-[11px] tracking-widest text-[var(--quiet)]">这周想做</div>
+              <div className="mb-2 text-[11px] tracking-widest text-[var(--quiet)]">
+                {tx("这周想做")}
+              </div>
               <ul className="space-y-1.5 text-[13px] text-[var(--ink)]/85">
                 {wishes.map((w) => (
                   <li key={w.name} className="flex items-baseline gap-2">
@@ -90,7 +96,9 @@ function RoomsPage() {
 
           {slots.length > 0 && (
             <div>
-              <div className="mb-2 text-[11px] tracking-widest text-[var(--quiet)]">可能有空</div>
+              <div className="mb-2 text-[11px] tracking-widest text-[var(--quiet)]">
+                {tx("可能有空")}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {slots.map((s, i) => (
                   <span
@@ -106,12 +114,12 @@ function RoomsPage() {
           )}
 
           <p className="mt-5 border-t border-[var(--border)] pt-3 text-[11px] text-[var(--quiet)]">
-            不是邀约，只是看见彼此的节奏。
+            {tx("不是邀约，只是看见彼此的节奏。")}
           </p>
         </section>
       )}
 
-      <SectionTitle>小世界</SectionTitle>
+      <SectionTitle>{tx("小世界")}</SectionTitle>
       <div>
         {rooms.map((r) => (
           <RoomCard key={r.id} room={r} />

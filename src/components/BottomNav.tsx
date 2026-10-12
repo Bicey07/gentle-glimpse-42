@@ -1,14 +1,17 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
+import { useI18n } from "@/lib/i18n";
+
 const items = [
-  { to: "/", label: "Space", glyph: "⌂" },
-  { to: "/friends", label: "Friends", glyph: "◍" },
-  { to: "/add", label: "Add", glyph: "＋" },
-  { to: "/rooms", label: "Rooms", glyph: "▢" },
-  { to: "/me", label: "Me", glyph: "·" },
+  { to: "/", label: "空间", glyph: "⌂" },
+  { to: "/friends", label: "好友", glyph: "◍" },
+  { to: "/add", label: "记录", glyph: "＋" },
+  { to: "/rooms", label: "房间", glyph: "▢" },
+  { to: "/me", label: "我的", glyph: "·" },
 ] as const;
 
 export function BottomNav() {
+  const { t: tx } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[var(--paper)]/90 backdrop-blur">
@@ -26,7 +29,7 @@ export function BottomNav() {
               }}
             >
               <span className="font-serif text-base leading-none">{it.glyph}</span>
-              <span>{it.label}</span>
+              <span>{tx(it.label)}</span>
             </Link>
           );
         })}

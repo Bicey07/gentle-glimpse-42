@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/friends/")({
 });
 
 function FriendsPage() {
+  const { t: tx } = useI18n();
   const friends = useStore((s) => s.friends);
   const mode = useStore((s) => s.mode);
   const loading = useStore((s) => s.loading);
@@ -16,22 +18,32 @@ function FriendsPage() {
 
   return (
     <PageShell>
-      <Link to="/" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
-        ← 走廊
+      <Link
+        to="/"
+        className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
+      >
+        {tx("← 走廊")}
       </Link>
       <header className="mb-10">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Friends</div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">朋友们各自的房间</h1>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{tx("朋友们各自的房间")}</h1>
         <p className="mt-2 text-sm text-[var(--quiet)]">
-          {mode === "demo" ? "这些是示例房间。轻轻推开任意一扇门看看。" : "轻轻推开任意一扇门看看。"}
+          {mode === "demo"
+            ? tx("这些是示例房间。轻轻推开任意一扇门看看。")
+            : tx("轻轻推开任意一扇门看看。")}
         </p>
       </header>
       {loading ? (
-        <p className="py-10 text-center text-xs text-[var(--quiet)]">正在推开门…</p>
+        <p className="py-10 text-center text-xs text-[var(--quiet)]">{tx("正在推开门…")}</p>
       ) : loadError ? (
-        <p role="alert" className="py-10 text-center text-xs text-[var(--bluegrey)]">没能读到朋友们的房间：{loadError}</p>
+        <p role="alert" className="py-10 text-center text-xs text-[var(--bluegrey)]">
+          {tx("没能读到朋友们的房间：")}
+          {tx(loadError)}
+        </p>
       ) : friends.length === 0 ? (
-        <p className="py-10 text-center text-xs text-[var(--quiet)]">还没有朋友的房间。可以把好友码给在意的人。</p>
+        <p className="py-10 text-center text-xs text-[var(--quiet)]">
+          {tx("还没有朋友的房间。可以把好友码给在意的人。")}
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {friends.map((f) => (
@@ -45,6 +57,7 @@ function FriendsPage() {
 }
 
 function FriendDoor() {
+  const { t: tx } = useI18n();
   const userId = useStore((s) => s.userId);
   const incoming = useStore((s) => s.incomingRequests);
   const [code, setCode] = useState("");
@@ -72,13 +85,19 @@ function FriendDoor() {
     <section className="mt-14 space-y-6 rounded-[24px] border border-[var(--border)] bg-[var(--card)]/60 p-5">
       {incoming.length > 0 && (
         <div>
-          <div className="mb-3 text-[10px] tracking-[0.28em] text-[var(--quiet)]">有人在敲门</div>
+          <div className="mb-3 text-[10px] tracking-[0.28em] text-[var(--quiet)]">
+            {tx("有人在敲门")}
+          </div>
           <ul className="space-y-2">
             {incoming.map((r) => (
               <li key={r.id} className="flex items-center justify-between text-sm">
                 <span className="font-serif">{r.fromName}</span>
-                <button disabled={busy} onClick={() => accept(r.id)} className="rounded-full border border-[var(--ink)] px-4 py-1 text-xs hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50">
-                  开门
+                <button
+                  disabled={busy}
+                  onClick={() => accept(r.id)}
+                  className="rounded-full border border-[var(--ink)] px-4 py-1 text-xs hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+                >
+                  {tx("开门")}
                 </button>
               </li>
             ))}
@@ -86,20 +105,30 @@ function FriendDoor() {
         </div>
       )}
       <div>
-        <div className="mb-2 text-[10px] tracking-[0.28em] text-[var(--quiet)]">我的好友码</div>
-        <code className="block select-all break-all text-[11px] text-[var(--ink)]/80">{userId}</code>
+        <div className="mb-2 text-[10px] tracking-[0.28em] text-[var(--quiet)]">
+          {tx("我的好友码")}
+        </div>
+        <code className="block select-all break-all text-[11px] text-[var(--ink)]/80">
+          {userId}
+        </code>
       </div>
       <form onSubmit={send} className="space-y-3">
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          placeholder="贴上朋友的好友码"
+          placeholder={tx("贴上朋友的好友码")}
           className="w-full border-b border-[var(--border)] bg-transparent py-2 text-sm outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
         />
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-[var(--quiet)]" role="status">{msg ?? "对方开门后，你们才能看到彼此的 Friends 内容。"}</span>
-          <button type="submit" disabled={busy || !code.trim()} className="shrink-0 rounded-full border border-[var(--ink)] px-4 py-1 text-xs hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50">
-            敲门
+          <span className="text-[11px] text-[var(--quiet)]" role="status">
+            {msg ? tx(msg) : tx("对方开门后，你们才能看到彼此的 Friends 内容。")}
+          </span>
+          <button
+            type="submit"
+            disabled={busy || !code.trim()}
+            className="shrink-0 rounded-full border border-[var(--ink)] px-4 py-1 text-xs hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+          >
+            {tx("敲门")}
           </button>
         </div>
       </form>

@@ -1,7 +1,9 @@
+import { useI18n, moodLabel } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import type { Person } from "../lib/types";
 
 export function MySpaceCard({ person }: { person: Person }) {
+  const { t: tx } = useI18n();
   const r = person.recent;
   return (
     <Link
@@ -10,7 +12,7 @@ export function MySpaceCard({ person }: { person: Person }) {
     >
       <div className="mb-6 flex items-baseline justify-between">
         <div>
-          <div className="font-serif text-lg text-[var(--ink)]">{person.name}的房间</div>
+          <div className="font-serif text-lg text-[var(--ink)]">{tx("你的房间")}</div>
           <div className="mt-1 text-xs text-[var(--quiet)]">{person.bio}</div>
         </div>
         <span
@@ -21,26 +23,27 @@ export function MySpaceCard({ person }: { person: Person }) {
       </div>
 
       <dl className="space-y-3 text-[14px]">
-        {r.mood && <Row label="本周">{r.mood}</Row>}
+        {r.mood && <Row label={tx("本周")}>{moodLabel(r.mood, tx)}</Row>}
         {r.reading && (
-          <Row label="在读">
+          <Row label={tx("在读")}>
             《{r.reading.title}》<span className="text-[var(--quiet)]"> · {r.reading.author}</span>
           </Row>
         )}
         {r.watching && (
-          <Row label="在看">
-            《{r.watching.title}》<span className="text-[var(--quiet)]"> · {r.watching.director}</span>
+          <Row label={tx("在看")}>
+            《{r.watching.title}》
+            <span className="text-[var(--quiet)]"> · {r.watching.director}</span>
           </Row>
         )}
         {r.sentence && (
-          <Row label="随记">
+          <Row label={tx("随记")}>
             <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
           </Row>
         )}
       </dl>
 
       <div className="mt-7 flex justify-end text-xs text-[var(--quiet)] group-hover:text-[var(--ink)]">
-        进入房间 →
+        {tx("进入房间 →")}
       </div>
     </Link>
   );
@@ -49,7 +52,9 @@ export function MySpaceCard({ person }: { person: Person }) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
-      <dt className="w-10 shrink-0 text-[11px] tracking-widest text-[var(--quiet)] pt-0.5">{label}</dt>
+      <dt className="w-16 shrink-0 text-[11px] tracking-widest text-[var(--quiet)] pt-0.5">
+        {label}
+      </dt>
       <dd className="flex-1 text-[var(--ink)]/90 leading-relaxed">{children}</dd>
     </div>
   );

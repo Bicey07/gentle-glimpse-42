@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { ArrowUpRight, KeyRound, LoaderCircle } from "lucide-react";
 import type { Receipt } from "../../lib/rooms/model";
@@ -25,9 +26,12 @@ export function JourneyLabel({ children }: { children: ReactNode }) {
   );
 }
 export function LocalNotice() {
+  const { t: tx } = useI18n();
   return (
     <p className="mt-3 text-[11px] leading-relaxed text-[var(--quiet)]">
-      演示护照与记忆只保存在当前浏览器，不自动同步给其他成员。Devnet 凭证可选，私密内容留在链下。
+      {tx(
+        "演示护照与记忆只保存在当前浏览器，不自动同步给其他成员。Devnet 凭证可选，私密内容留在链下。",
+      )}
     </p>
   );
 }
@@ -40,17 +44,20 @@ export function ReceiptView({
   onRefresh: () => void;
   busy: boolean;
 }) {
+  const { t: tx } = useI18n();
   return (
     <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--paper)] p-3 text-xs">
       <div className="flex items-center gap-2">
         <KeyRound size={13} />
         {receipt.status === "confirmed"
-          ? "Devnet 已确认"
+          ? tx("Devnet 已确认")
           : receipt.status === "failed"
-            ? "交易失败 · 可重新尝试"
-            : "已签名 · 等待确认"}
+            ? tx("交易失败 · 可重新尝试")
+            : tx("已签名 · 等待确认")}
       </div>
-      <p className="mt-2 break-all text-[10px] text-[var(--quiet)]">钱包 {receipt.wallet}</p>
+      <p className="mt-2 break-all text-[10px] text-[var(--quiet)]">
+        {tx("钱包")} {receipt.wallet}
+      </p>
       {receipt.mint && (
         <p className="mt-1 break-all text-[10px] text-[var(--quiet)]">Mint {receipt.mint}</p>
       )}
@@ -61,7 +68,8 @@ export function ReceiptView({
           rel="noreferrer"
           className="inline-flex items-center gap-1 underline underline-offset-4"
         >
-          查看交易 <ArrowUpRight size={12} />
+          {tx("查看交易")}
+          <ArrowUpRight size={12} />
         </a>
         {receipt.status === "pending" && (
           <button
@@ -70,13 +78,14 @@ export function ReceiptView({
             onClick={onRefresh}
             className="inline-flex items-center gap-1 disabled:opacity-50"
           >
-            {busy && <LoaderCircle size={12} className="animate-spin" />}检查确认状态
+            {busy && <LoaderCircle size={12} className="animate-spin" />}
+            {tx("检查确认状态")}
           </button>
         )}
       </div>
       {receipt.status === "pending" && (
         <p className="mt-2 text-[10px] leading-relaxed text-[var(--quiet)]">
-          网络中断时交易仍可能成功。先检查回执，请勿重复领取。
+          {tx("网络中断时交易仍可能成功。先检查回执，请勿重复领取。")}
         </p>
       )}
     </div>

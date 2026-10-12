@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 
 type Capsule = {
@@ -28,8 +29,7 @@ type AmbientAudio = {
 
 const STORAGE_KEY = "quiet-space:memory-capsules:v1";
 const SOLANA_RPC = "https://api.devnet.solana.com";
-const SOLANA_WEB3_SCRIPT =
-  "https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js";
+const SOLANA_WEB3_SCRIPT = "https://unpkg.com/@solana/web3.js@1.98.4/lib/index.iife.min.js";
 const SOLANA_WEB3_INTEGRITY =
   "sha384-I45YF+S0YGWIolUyTksLk9TNtTqaDgZg8e6T1OoBoJvvFmphqYNIPZw3Kl0TkZNN";
 const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
@@ -77,9 +77,7 @@ type SolanaProvider = {
   isPhantom?: boolean;
   publicKey?: SolanaPublicKey;
   connect: () => Promise<{ publicKey: SolanaPublicKey }>;
-  signAndSendTransaction: (
-    transaction: SolanaTransaction,
-  ) => Promise<{ signature: string }>;
+  signAndSendTransaction: (transaction: SolanaTransaction) => Promise<{ signature: string }>;
 };
 
 declare global {
@@ -107,11 +105,9 @@ function loadSolanaWeb3() {
     };
 
     script.addEventListener("load", finish, { once: true });
-    script.addEventListener(
-      "error",
-      () => reject(new Error("SOLANA_WEB3_UNAVAILABLE")),
-      { once: true },
-    );
+    script.addEventListener("error", () => reject(new Error("SOLANA_WEB3_UNAVAILABLE")), {
+      once: true,
+    });
 
     if (!existing) {
       script.src = SOLANA_WEB3_SCRIPT;
@@ -242,6 +238,7 @@ function anniversaryLabel(memoryDate: string) {
 }
 
 export function MemoryRoom({ name }: { name: string }) {
+  const { t: tx } = useI18n();
   const [capsules, setCapsules] = useState<Capsule[]>([]);
   const [mode, setMode] = useState<"create" | "unlock" | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -503,7 +500,9 @@ export function MemoryRoom({ name }: { name: string }) {
           <div className="text-[10px] uppercase tracking-[0.3em] text-[var(--quiet)]">
             Memory Room
           </div>
-          <h2 className="mt-2 font-serif text-[20px] text-[var(--ink)]">{name}的小屋</h2>
+          <h2 className="mt-2 font-serif text-[20px] text-[var(--ink)]">
+            {tx("{name}的小屋", { name })}
+          </h2>
         </div>
         <button
           type="button"
@@ -511,7 +510,7 @@ export function MemoryRoom({ name }: { name: string }) {
           className="rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-[11px] text-[var(--quiet)] transition-colors hover:border-[var(--bluegrey)]"
           aria-pressed={soundOn}
         >
-          {soundOn ? "◉ 环境音" : "○ 环境音"}
+          {soundOn ? tx("◉ 环境音") : tx("○ 环境音")}
         </button>
       </div>
 
@@ -530,12 +529,12 @@ export function MemoryRoom({ name }: { name: string }) {
             type="button"
             onClick={() => openCapsule(featuredObject.id)}
             className="group absolute left-1/2 top-7 z-10 h-[76px] w-[68px] -translate-x-1/2 rotate-1 border-[6px] border-[#8e7560] bg-[#ded6c8] shadow-[0_8px_18px_rgba(72,56,42,0.14)] transition-transform hover:-translate-y-1"
-            aria-label="打开从现实带进小屋的物品"
+            aria-label={tx("打开从现实带进小屋的物品")}
           >
             {featuredObjectImage ? (
               <img
                 src={featuredObjectImage}
-                alt="从现实带进小屋的物品"
+                alt={tx("从现实带进小屋的物品")}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -544,7 +543,7 @@ export function MemoryRoom({ name }: { name: string }) {
               </span>
             )}
             <span className="absolute -bottom-5 left-1/2 w-max -translate-x-1/2 text-[9px] text-[#756858] opacity-0 transition-opacity group-hover:opacity-100">
-              {featuredObjectImage ? "现实里的物品" : "输入口令后显现"}
+              {featuredObjectImage ? tx("现实里的物品") : tx("输入口令后显现")}
             </span>
           </button>
         )}
@@ -583,7 +582,7 @@ export function MemoryRoom({ name }: { name: string }) {
                 onClick={() => openCapsule(capsule.id)}
                 className="capsule-glow flex h-14 items-center justify-center rounded-t-full border border-[#eadfcf] bg-[#f2e5bd] text-lg shadow-inner transition-transform hover:-translate-y-1"
                 style={{ animationDelay: `${index * 0.7}s` }}
-                aria-label={`打开第 ${index + 1} 个加密记忆胶囊`}
+                aria-label={tx("打开第 {number} 个加密记忆胶囊", { number: index + 1 })}
               >
                 ◇
               </button>
@@ -592,17 +591,19 @@ export function MemoryRoom({ name }: { name: string }) {
               <button
                 type="button"
                 onClick={openCreate}
-                className="col-span-3 flex h-14 items-center justify-center rounded-xl border border-dashed border-[#e5d5be] text-xs text-[#f3eadc] transition-colors hover:bg-white/10"
+                className="col-span-3 flex h-14 px-2 items-center justify-center rounded-xl border border-dashed border-[#e5d5be] text-xs text-[#f3eadc] transition-colors hover:bg-white/10"
               >
-                把第一段记忆放进来 ＋
+                {tx("把第一段记忆放进来 ＋")}
               </button>
             )}
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl border border-white/50 bg-[#f8f4ec]/85 px-4 py-3 backdrop-blur-sm">
+        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 rounded-2xl border border-white/50 bg-[#f8f4ec]/85 px-4 py-3 backdrop-blur-sm">
           <div>
-            <div className="text-[11px] text-[var(--ink)]">{capsules.length} 份加密记忆</div>
+            <div className="text-[11px] text-[var(--ink)]">
+              {tx("{count} 份加密记忆", { count: capsules.length })}
+            </div>
             <div className="mt-0.5 text-[9px] tracking-wider text-[var(--quiet)]">
               AES-GCM · SOLANA DEVNET PROOF
             </div>
@@ -612,7 +613,7 @@ export function MemoryRoom({ name }: { name: string }) {
             onClick={openCreate}
             className="rounded-full bg-[var(--ink)] px-4 py-2 text-[11px] text-[var(--paper)] transition-transform hover:-translate-y-0.5"
           >
-            封存记忆
+            {tx("封存记忆")}
           </button>
         </div>
       </div>
@@ -621,12 +622,15 @@ export function MemoryRoom({ name }: { name: string }) {
         <div className="flex items-start gap-2">
           <span className="mt-0.5 text-[var(--sage)]">●</span>
           <p>
-            文字和照片会先在你的设备上加密；当前密文只保存在本机。你可以把内容指纹写入 Solana
-            Devnet，公开证明时间与完整性，照片本身不会上链。
+            {tx(
+              "文字和照片会先在你的设备上加密；当前密文只保存在本机。你可以把内容指纹写入 Solana Devnet，公开证明时间与完整性，照片本身不会上链。",
+            )}
           </p>
         </div>
         {notice && (
-          <p className="mt-2 border-t border-[var(--border)] pt-2 text-[var(--ink)]">{notice}</p>
+          <p className="mt-2 border-t border-[var(--border)] pt-2 text-[var(--ink)]">
+            {tx(notice)}
+          </p>
         )}
       </div>
 
@@ -639,14 +643,14 @@ export function MemoryRoom({ name }: { name: string }) {
                   {mode === "create" ? "New Memory Capsule" : "Private Memory"}
                 </div>
                 <h3 className="mt-2 font-serif text-xl text-[var(--ink)]">
-                  {mode === "create" ? "封存一段记忆" : "打开记忆胶囊"}
+                  {mode === "create" ? tx("封存一段记忆") : tx("打开记忆胶囊")}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
                 className="p-2 text-[var(--quiet)]"
-                aria-label="关闭"
+                aria-label={tx("关闭")}
               >
                 ×
               </button>
@@ -655,36 +659,38 @@ export function MemoryRoom({ name }: { name: string }) {
             {mode === "create" ? (
               <form onSubmit={createCapsule} className="space-y-5">
                 <label className="block">
-                  <span className="text-[11px] text-[var(--quiet)]">记忆的名字</span>
+                  <span className="text-[11px] text-[var(--quiet)]">{tx("记忆的名字")}</span>
                   <input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    placeholder="那天下午的风"
+                    placeholder={tx("那天下午的风")}
                     className="mt-2 w-full border-b border-[var(--border)] bg-transparent py-2 font-serif outline-none focus:border-[var(--bluegrey)]"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[11px] text-[var(--quiet)]">想保存的内容</span>
+                  <span className="text-[11px] text-[var(--quiet)]">{tx("想保存的内容")}</span>
                   <textarea
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
-                    placeholder="写下一点只有你们知道的事……"
+                    placeholder={tx("写下一点只有你们知道的事……")}
                     rows={4}
                     className="mt-2 w-full resize-none rounded-2xl border border-[var(--border)] bg-white/45 p-3 font-serif leading-relaxed outline-none focus:border-[var(--bluegrey)]"
                   />
                 </label>
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[11px] text-[var(--quiet)]">把现实里的物品带进小屋</span>
+                    <span className="text-[11px] text-[var(--quiet)]">
+                      {tx("把现实里的物品带进小屋")}
+                    </span>
                     <span className="text-[9px] tracking-wider text-[var(--quiet)]">
-                      可选 · 本地加密
+                      {tx("可选 · 本地加密")}
                     </span>
                   </div>
                   {imageDataUrl ? (
                     <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-white/45 p-2">
                       <img
                         src={imageDataUrl}
-                        alt="准备加密的实物照片"
+                        alt={tx("准备加密的实物照片")}
                         className="h-40 w-full rounded-xl object-cover"
                       />
                       <button
@@ -692,17 +698,17 @@ export function MemoryRoom({ name }: { name: string }) {
                         onClick={() => setImageDataUrl("")}
                         className="absolute right-4 top-4 rounded-full bg-[#302b25]/65 px-2.5 py-1 text-[10px] text-white"
                       >
-                        重新选择
+                        {tx("重新选择")}
                       </button>
                     </div>
                   ) : (
                     <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-[#ccbfae] bg-white/35 px-4 py-4 transition-colors hover:bg-white/55">
                       <span>
                         <span className="block font-serif text-sm text-[var(--ink)]">
-                          拍摄或上传一件物品
+                          {tx("拍摄或上传一件物品")}
                         </span>
                         <span className="mt-1 block text-[10px] text-[var(--quiet)]">
-                          会压缩后与文字一起加密，最大 8MB
+                          {tx("会压缩后与文字一起加密，最大 8MB")}
                         </span>
                       </span>
                       <span className="text-xl text-[var(--bluegrey)]">＋</span>
@@ -718,7 +724,7 @@ export function MemoryRoom({ name }: { name: string }) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="text-[11px] text-[var(--quiet)]">发生日期</span>
+                    <span className="text-[11px] text-[var(--quiet)]">{tx("发生日期")}</span>
                     <input
                       type="date"
                       value={memoryDate}
@@ -727,32 +733,32 @@ export function MemoryRoom({ name }: { name: string }) {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-[11px] text-[var(--quiet)]">共同记得的人</span>
+                    <span className="text-[11px] text-[var(--quiet)]">{tx("共同记得的人")}</span>
                     <input
                       value={sharedWith}
                       onChange={(event) => setSharedWith(event.target.value)}
-                      placeholder="朋友的名字"
+                      placeholder={tx("朋友的名字")}
                       className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white/45 px-3 py-2 text-xs outline-none"
                     />
                   </label>
                 </div>
                 <label className="block">
-                  <span className="text-[11px] text-[var(--quiet)]">打开口令</span>
+                  <span className="text-[11px] text-[var(--quiet)]">{tx("打开口令")}</span>
                   <input
                     type="password"
                     value={passphrase}
                     onChange={(event) => setPassphrase(event.target.value)}
-                    placeholder="至少 6 个字符，我们不会保存它"
+                    placeholder={tx("至少 6 个字符，我们不会保存它")}
                     className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white/45 px-3 py-2 text-sm outline-none focus:border-[var(--bluegrey)]"
                   />
                 </label>
-                {notice && <p className="text-xs text-[#9a5f4f]">{notice}</p>}
+                {notice && <p className="text-xs text-[#9a5f4f]">{tx(notice)}</p>}
                 <button
                   type="submit"
                   disabled={busy}
                   className="w-full rounded-full bg-[var(--ink)] px-5 py-3 text-sm text-[var(--paper)] disabled:opacity-50"
                 >
-                  {busy ? "正在加密……" : "加密并放进小屋"}
+                  {busy ? tx("正在加密……") : tx("加密并放进小屋")}
                 </button>
               </form>
             ) : revealed ? (
@@ -772,10 +778,22 @@ export function MemoryRoom({ name }: { name: string }) {
                     </p>
                   )}
                   <div className="mt-5 space-y-1 border-t border-[var(--border)] pt-4 text-[11px] text-[var(--quiet)]">
-                    {revealed.memoryDate && <p>发生于 {revealed.memoryDate}</p>}
-                    {revealed.sharedWith && <p>与 {revealed.sharedWith} 共同记得</p>}
-                    {selectedCapsule && <p>本地证明 {selectedCapsule.proof.slice(0, 12)}…</p>}
-                    {selectedCapsule?.owner && <p>所有者 {selectedCapsule.owner.slice(0, 8)}…</p>}
+                    {revealed.memoryDate && (
+                      <p>{tx("发生于 {date}", { date: revealed.memoryDate })}</p>
+                    )}
+                    {revealed.sharedWith && (
+                      <p>{tx("与 {people} 共同记得", { people: revealed.sharedWith })}</p>
+                    )}
+                    {selectedCapsule && (
+                      <p>
+                        {tx("本地证明")} {selectedCapsule.proof.slice(0, 12)}…
+                      </p>
+                    )}
+                    {selectedCapsule?.owner && (
+                      <p>
+                        {tx("所有者")} {selectedCapsule.owner.slice(0, 8)}…
+                      </p>
+                    )}
                   </div>
                 </div>
                 {selectedCapsule?.solanaSignature ? (
@@ -785,7 +803,7 @@ export function MemoryRoom({ name }: { name: string }) {
                     rel="noreferrer"
                     className="block rounded-2xl border border-[#c8d7c1] bg-[#eef5e9] px-4 py-3 text-center text-xs text-[#52684f]"
                   >
-                    ✓ 已由 Solana Devnet 验证 · 查看交易 ↗
+                    {tx("✓ 已由 Solana Devnet 验证 · 查看交易 ↗")}
                   </a>
                 ) : (
                   <button
@@ -794,23 +812,23 @@ export function MemoryRoom({ name }: { name: string }) {
                     onClick={sealProofOnSolana}
                     className="w-full rounded-full border border-[var(--ink)] px-5 py-3 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
                   >
-                    {busy ? "等待钱包确认……" : "Seal on Solana Devnet"}
+                    {busy ? tx("等待钱包确认……") : "Seal on Solana Devnet"}
                   </button>
                 )}
-                {notice && <p className="text-xs text-[#9a5f4f]">{notice}</p>}
+                {notice && <p className="text-xs text-[#9a5f4f]">{tx(notice)}</p>}
                 {anniversaryLabel(revealed.memoryDate) && (
                   <div className="capsule-glow rounded-2xl border border-[#ead8ad] bg-[#fff6d9] px-4 py-3 text-center font-serif text-sm text-[#7b6645]">
-                    ✦ {anniversaryLabel(revealed.memoryDate)}
+                    ✦ {tx(anniversaryLabel(revealed.memoryDate))}
                   </div>
                 )}
               </div>
             ) : (
               <form onSubmit={unlockCapsule} className="space-y-5">
                 <p className="text-sm leading-relaxed text-[var(--quiet)]">
-                  这段内容只有用创建时的口令才能解密。口令不会离开你的设备。
+                  {tx("这段内容只有用创建时的口令才能解密。口令不会离开你的设备。")}
                 </p>
                 <label className="block">
-                  <span className="text-[11px] text-[var(--quiet)]">打开口令</span>
+                  <span className="text-[11px] text-[var(--quiet)]">{tx("打开口令")}</span>
                   <input
                     autoFocus
                     type="password"
@@ -819,13 +837,13 @@ export function MemoryRoom({ name }: { name: string }) {
                     className="mt-2 w-full rounded-xl border border-[var(--border)] bg-white/45 px-3 py-3 outline-none focus:border-[var(--bluegrey)]"
                   />
                 </label>
-                {notice && <p className="text-xs text-[#9a5f4f]">{notice}</p>}
+                {notice && <p className="text-xs text-[#9a5f4f]">{tx(notice)}</p>}
                 <button
                   type="submit"
                   disabled={busy || !passphrase}
                   className="w-full rounded-full bg-[var(--ink)] px-5 py-3 text-sm text-[var(--paper)] disabled:opacity-50"
                 >
-                  {busy ? "正在解密……" : "打开这段记忆"}
+                  {busy ? tx("正在解密……") : tx("打开这段记忆")}
                 </button>
               </form>
             )}

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const { t: tx } = useI18n();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,15 +65,17 @@ function AuthPage() {
     return (
       <PageShell>
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-          <div className="font-serif text-xl text-[var(--ink)]">你已经在房间里了。</div>
+          <div className="font-serif text-xl text-[var(--ink)]">{tx("你已经在房间里了。")}</div>
           <div className="mt-2 text-xs text-[var(--quiet)]">{userEmail}</div>
           <button
             onClick={() => supabase.auth.signOut()}
             className="mt-8 rounded-full border border-[var(--border)] px-5 py-1.5 text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
           >
-            退出登录
+            {tx("退出登录")}
           </button>
-          <Link to="/me" className="mt-4 text-xs text-[var(--bluegrey)]">去我的房间 →</Link>
+          <Link to="/me" className="mt-4 text-xs text-[var(--bluegrey)]">
+            {tx("去我的房间 →")}
+          </Link>
         </div>
       </PageShell>
     );
@@ -82,30 +86,64 @@ function AuthPage() {
       <header className="mb-10">
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Sign in</div>
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">
-          {mode === "in" ? "回到自己的房间。" : "给自己一间房间。"}
+          {mode === "in" ? tx("回到自己的房间。") : tx("给自己一间房间。")}
         </h1>
-        <p className="mt-2 text-xs text-[var(--quiet)]">不登录也可以四处看看示例房间。</p>
+        <p className="mt-2 text-xs text-[var(--quiet)]">{tx("不登录也可以四处看看示例房间。")}</p>
       </header>
       <form onSubmit={submit} className="space-y-5">
         {mode === "up" && (
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="想被怎么称呼（可选）" maxLength={40} className={input} />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={tx("想被怎么称呼（可选）")}
+            maxLength={40}
+            className={input}
+          />
         )}
-        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="邮箱" autoComplete="email" className={input} />
-        <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="密码（至少 6 位）" autoComplete={mode === "in" ? "current-password" : "new-password"} className={input} />
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={tx("邮箱")}
+          autoComplete="email"
+          className={input}
+        />
+        <input
+          type="password"
+          required
+          minLength={6}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={tx("密码（至少 6 位）")}
+          autoComplete={mode === "in" ? "current-password" : "new-password"}
+          className={input}
+        />
         {msg && (
-          <p role="alert" className="text-center text-xs" style={{ color: msg.kind === "ok" ? "var(--ink)" : "var(--bluegrey)" }}>
-            {msg.text}
+          <p
+            role="alert"
+            className="text-center text-xs"
+            style={{ color: msg.kind === "ok" ? "var(--ink)" : "var(--bluegrey)" }}
+          >
+            {tx(msg.text)}
           </p>
         )}
-        <button type="submit" disabled={busy} className="w-full rounded-full border border-[var(--ink)] py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50">
-          {busy ? "稍等…" : mode === "in" ? "登录" : "注册"}
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-full border border-[var(--ink)] py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
+        >
+          {busy ? tx("稍等…") : mode === "in" ? tx("登录") : tx("注册")}
         </button>
       </form>
       <button
-        onClick={() => { setMode(mode === "in" ? "up" : "in"); setMsg(null); }}
+        onClick={() => {
+          setMode(mode === "in" ? "up" : "in");
+          setMsg(null);
+        }}
         className="mt-6 block w-full text-center text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
       >
-        {mode === "in" ? "还没有房间？注册一个" : "已经有房间了？去登录"}
+        {mode === "in" ? tx("还没有房间？注册一个") : tx("已经有房间了？去登录")}
       </button>
     </PageShell>
   );

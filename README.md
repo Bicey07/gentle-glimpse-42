@@ -80,6 +80,13 @@ npm run build
 npm run lint
 npm run typecheck
 npm run test:rooms
+npm run test:i18n
 ```
 
 This project is connected to Lovable. Changes pushed to `main` remain available in the Lovable editor.
+
+## Display language
+
+Use **中文 / English** at the top of any page to switch the interface. Chinese is the default. The preference is saved in this browser and synced between open tabs; switching does not reset forms or alter user content, Room Keys, or memory proofs. If browser storage is disabled, switching still works for the current session.
+
+The built-in English catalog is `src/lib/i18n/en.json`; Chinese UI strings are the keys. Add both the source string and its English translation for new UI text. Use `useI18n().t` at render time, with named placeholders for values, and leave authored notes, room names, and other user content unchanged.

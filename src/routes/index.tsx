@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { MemoryRoom } from "../components/MemoryRoom";
@@ -32,6 +33,7 @@ const quickActions = [
 ];
 
 function SpacePage() {
+  const { t: tx } = useI18n();
   const me = useStore((s) => s.me);
   const friends = useStore((s) => s.friends);
   const rooms: Room[] = allRooms;
@@ -48,10 +50,10 @@ function SpacePage() {
           QUIET · SPACE
         </div>
         <h1 className="mt-4 font-serif text-[23px] leading-[1.65] text-[var(--ink)]">
-          一间被记忆慢慢布置出来的小屋。
+          {tx("一间被记忆慢慢布置出来的小屋。")}
         </h1>
         <p className="mt-3 text-[12px] leading-relaxed text-[var(--quiet)]">
-          没有点赞和比较。留下生活痕迹，也被在意的人温柔看见。
+          {tx("没有点赞和比较。留下生活痕迹，也被在意的人温柔看见。")}
         </p>
       </header>
 
@@ -67,8 +69,8 @@ function SpacePage() {
               search={a.search as never}
               className="group rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 px-4 py-4 transition-colors hover:border-[var(--bluegrey)] hover:bg-[var(--card)]"
             >
-              <div className="font-serif text-[15px] text-[var(--ink)]">{a.label}</div>
-              <div className="mt-1 text-[11px] text-[var(--quiet)]">{a.hint}</div>
+              <div className="font-serif text-[15px] text-[var(--ink)]">{tx(a.label)}</div>
+              <div className="mt-1 text-[11px] text-[var(--quiet)]">{tx(a.hint)}</div>
             </Link>
           ))}
         </div>
@@ -83,7 +85,7 @@ function SpacePage() {
         <SectionTitle
           aside={
             <Link to="/friends" className="hover:text-[var(--ink)]">
-              所有朋友 →
+              {tx("所有朋友 →")}
             </Link>
           }
         >
@@ -100,7 +102,7 @@ function SpacePage() {
         <SectionTitle
           aside={
             <Link to="/rooms" className="hover:text-[var(--ink)]">
-              更多 →
+              {tx("更多 →")}
             </Link>
           }
         >
@@ -114,7 +116,7 @@ function SpacePage() {
       </section>
 
       <section className="mb-10">
-        <SectionTitle>最近的回声</SectionTitle>
+        <SectionTitle>{tx("最近的回声")}</SectionTitle>
         <div className="opacity-80">
           {recentTraces.map((t) => (
             <TraceLine key={t.id} trace={t} />
@@ -123,7 +125,7 @@ function SpacePage() {
       </section>
 
       <p className="pt-6 text-center text-[11px] tracking-widest text-[var(--quiet)]">
-        —— 在这里，可以慢慢待着 ——
+        {tx("—— 在这里，可以慢慢待着 ——")}
       </p>
     </PageShell>
   );

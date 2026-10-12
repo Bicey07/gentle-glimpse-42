@@ -5,29 +5,35 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+
+import { LanguageProvider, useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 import appCss from "../styles.css?url";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { session } from "../lib/store";
 
 function NotFoundComponent() {
+  const { t: tx } = useI18n();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
+        <div className="mb-8 flex justify-center">
+          <LanguageSwitcher />
+        </div>
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">{tx("此页面不存在")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{tx("找不到你要访问的页面。")}</p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {tx("回到首页")}
           </Link>
         </div>
       </div>
@@ -36,17 +42,21 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
+  const { t: tx } = useI18n();
   console.error(error);
   const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
+        <div className="mb-8 flex justify-center">
+          <LanguageSwitcher />
+        </div>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {tx("页面未能加载")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {tx("加载时出了点问题。请再试一次，或回到首页。")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -56,13 +66,13 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {tx("再试一次")}
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            {tx("回到首页")}
           </a>
         </div>
       </div>
@@ -122,7 +132,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
+    <LanguageProvider>
+      <LocalizedDocument>{children}</LocalizedDocument>
+    </LanguageProvider>
+  );
+}
+
+function LocalizedDocument({ children }: { children: React.ReactNode }) {
+  const { locale } = useI18n();
+  return (
+    <html lang={locale === "en" ? "en" : "zh-CN"}>
       <head>
         <HeadContent />
       </head>
@@ -139,6 +158,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <LocalizedMetadata />
       <PwaRegistration />
       <AuthSync />
       <Outlet />
@@ -164,7 +184,13 @@ function AuthSync() {
       });
 
     const { data } = supabase.auth.onAuthStateChange((event, s) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED" && event !== "INITIAL_SESSION") return;
+      if (
+        event !== "SIGNED_IN" &&
+        event !== "SIGNED_OUT" &&
+        event !== "USER_UPDATED" &&
+        event !== "INITIAL_SESSION"
+      )
+        return;
       session.setUser(s?.user ?? null);
     });
     return () => {
@@ -191,5 +217,22 @@ function PwaRegistration() {
     return () => window.removeEventListener("load", register);
   }, []);
 
+  return null;
+}
+
+function LocalizedMetadata() {
+  const { t: tx } = useI18n();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  useEffect(() => {
+    document.title = tx(
+      pathname === "/auth" ? "登录 · Quiet Space" : "Quiet Space · 安静的生活记录",
+    );
+    const description = tx(
+      pathname === "/auth"
+        ? "用邮箱登录，开始在自己的房间里留下生活痕迹。"
+        : "一个没有点赞、没有比较的生活记录空间。",
+    );
+    document.querySelector('meta[name="description"]')?.setAttribute("content", description);
+  }, [pathname, tx]);
   return null;
 }

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import { BookOpen, Download, KeyRound } from "lucide-react";
 import { exportJson } from "../../lib/rooms/model";
@@ -6,6 +7,7 @@ import { useStore } from "../../lib/store";
 import { JourneyButton, JourneyLabel, LocalNotice } from "./JourneyUi";
 
 export function RoomPassport() {
+  const { t: tx } = useI18n();
   const scope = useStore((s) => s.userId ?? "guest");
   const { state, error } = useJourney(scope);
   return (
@@ -13,24 +15,24 @@ export function RoomPassport() {
       <div className="flex items-start justify-between gap-3 p-6 pb-4">
         <div>
           <JourneyLabel>Room Passport</JourneyLabel>
-          <h2 className="mt-3 font-serif text-xl">属于你的小世界</h2>
+          <h2 className="mt-3 font-serif text-xl">{tx("属于你的小世界")}</h2>
         </div>
         <BookOpen size={28} strokeWidth={1} className="text-[var(--bluegrey)]" />
       </div>
       <div className="px-6 pb-6">
         <p className="text-xs leading-relaxed text-[var(--quiet)]">
-          带走的不是内容，而是「我曾在这里」。
+          {tx("带走的不是内容，而是「我曾在这里」。")}
         </p>
         {error && (
           <p role="alert" className="mt-3 text-xs text-red-800">
-            {error}
+            {tx(error)}
           </p>
         )}
         {state.keys.length === 0 ? (
           <div className="my-5 rounded-2xl border border-dashed border-[var(--border)] p-5 text-center">
             <KeyRound size={22} strokeWidth={1} className="mx-auto text-[var(--quiet)]" />
             <p className="mt-3 text-xs text-[var(--quiet)]">
-              加入一个小世界，收下第一把 Room Key。
+              {tx("加入一个小世界，收下第一把 Room Key。")}
             </p>
           </div>
         ) : (
@@ -51,13 +53,15 @@ export function RoomPassport() {
                       <KeyRound size={16} strokeWidth={1.3} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-serif text-sm">{room?.name ?? "小世界"}</div>
+                      <div className="truncate font-serif text-sm">
+                        {room?.name ?? tx("小世界")}
+                      </div>
                       <div className="mt-1 text-[10px] text-[var(--quiet)]">
                         {key.receipt?.status === "confirmed"
-                          ? "Devnet · 不可转让"
+                          ? tx("Devnet · 不可转让")
                           : key.receipt?.status === "pending"
-                            ? "交易待确认"
-                            : "本地 Room Key · 未上链"}
+                            ? tx("交易待确认")
+                            : tx("本地 Room Key · 未上链")}
                       </div>
                     </div>
                     <span aria-hidden>↗</span>
@@ -81,7 +85,7 @@ export function RoomPassport() {
             }
           >
             <Download size={13} />
-            导出我的护照
+            {tx("导出我的护照")}
           </JourneyButton>
         )}
         <LocalNotice />

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useRef, useState } from "react";
 import { Check, Copy, KeyRound, Share2, Wallet } from "lucide-react";
 import { useStore } from "../../lib/store";
@@ -11,6 +12,7 @@ export function RoomJourney({ room }: { room: JourneyRoom }) {
   return <JourneyContent key={`${scope}:${room.id}`} scope={scope} room={room} />;
 }
 function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
+  const { t: tx } = useI18n();
   const journey = useJourney(scope);
   const roomKey = journey.state.keys.find((key) => key.roomId === room.id);
   const [wallet, setWallet] = useState("");
@@ -49,9 +51,9 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
   return (
     <div className="mb-10">
       <ol className="mb-5 grid grid-cols-3 gap-2 text-center text-[10px] text-[var(--quiet)]">
-        <li>01 · 邀请相遇</li>
-        <li>02 · 收下钥匙</li>
-        <li>03 · 留下记忆</li>
+        <li>{tx("01 · 邀请相遇")}</li>
+        <li>{tx("02 · 收下钥匙")}</li>
+        <li>{tx("03 · 留下记忆")}</li>
       </ol>
       <section className="rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-5">
         <div className="flex items-center justify-between">
@@ -59,10 +61,10 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
           <KeyRound size={21} strokeWidth={1.2} />
         </div>
         <h2 className="mt-3 font-serif text-xl">
-          {roomKey ? "这个小世界，有你的位置。" : "给自己留一个位置。"}
+          {roomKey ? tx("这个小世界，有你的位置。") : tx("给自己留一个位置。")}
         </h2>
         <p className="mt-3 text-xs leading-relaxed text-[var(--quiet)]">
-          私密内容留在链下。「我属于哪些小世界」，由自己保存。
+          {tx("私密内容留在链下。「我属于哪些小世界」，由自己保存。")}
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {roomKey ? (
@@ -72,8 +74,8 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
             >
               <Check size={13} />
               {roomKey.receipt?.status === "confirmed"
-                ? "已领取 Devnet Room Key"
-                : "已收下本地 Room Key"}
+                ? tx("已领取 Devnet Room Key")
+                : tx("已收下本地 Room Key")}
             </span>
           ) : (
             <JourneyButton
@@ -81,18 +83,18 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
               onClick={() => void perform(() => journey.join(room))}
             >
               <KeyRound size={13} />
-              加入演示 · 收下 Room Key
+              {tx("加入演示 · 收下 Room Key")}
             </JourneyButton>
           )}
           <JourneyButton secondary onClick={showShare}>
             <Share2 size={13} />
-            邀请朋友
+            {tx("邀请朋友")}
           </JourneyButton>
         </div>
         <LocalNotice />
         {journey.error && (
           <p role="alert" className="mt-3 text-xs text-red-800">
-            {journey.error}
+            {tx(journey.error)}
           </p>
         )}
         {share && (
@@ -101,9 +103,9 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
             <p className="mt-3 font-serif text-base">{room.name}</p>
             <p className="mt-2 text-xs text-[var(--quiet)]">{room.description}</p>
             <label className="mt-4 block text-[11px] text-[var(--quiet)]">
-              邀请链接
+              {tx("邀请链接")}
               <input
-                aria-label="邀请链接"
+                aria-label={tx("邀请链接")}
                 readOnly
                 value={inviteUrl}
                 onFocus={(e) => e.target.select()}
@@ -121,7 +123,7 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                 }
               >
                 <Copy size={12} />
-                复制邀请
+                {tx("复制邀请")}
               </JourneyButton>
               {blinkUrl && (
                 <JourneyButton
@@ -133,15 +135,17 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                     })
                   }
                 >
-                  复制 Room Blink
+                  {tx("复制 Room Blink")}
                 </JourneyButton>
               )}
             </div>
             <p className="mt-3 text-[10px] leading-relaxed text-[var(--quiet)]">
-              邀请只分享公开房间介绍，不同步纸条或记忆。
+              {tx("邀请只分享公开房间介绍，不同步纸条或记忆。")}
               {blinkUrl
-                ? "Blink 会打开外部钱包领取 Devnet 凭证，回执不会自动写回本地护照；社交平台内展开取决于客户端与域名审核。"
-                : "本地预览支持普通邀请；部署到公开 HTTPS 域名后会出现 Room Blink。"}
+                ? tx(
+                    "Blink 会打开外部钱包领取 Devnet 凭证，回执不会自动写回本地护照；社交平台内展开取决于客户端与域名审核。",
+                  )
+                : tx("本地预览支持普通邀请；部署到公开 HTTPS 域名后会出现 Room Blink。")}
             </p>
           </div>
         )}
@@ -149,7 +153,9 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
           <div className="mt-5 border-t border-[var(--border)] pt-5">
             <JourneyLabel>Optional · Solana Devnet</JourneyLabel>
             <p className="mt-3 text-xs leading-relaxed text-[var(--quiet)]">
-              把钥匙放进钱包：一枚不可转让的演示凭证。自行领取，不代表房主认证，也不替代云端房间的访问权限。
+              {tx(
+                "把钥匙放进钱包：一枚不可转让的演示凭证。自行领取，不代表房主认证，也不替代云端房间的访问权限。",
+              )}
             </p>
             {!wallet ? (
               <JourneyButton
@@ -164,7 +170,7 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                 }
               >
                 <Wallet size={13} />
-                连接 Phantom
+                {tx("连接 Phantom")}
               </JourneyButton>
             ) : (
               <div className="mt-4 flex items-center gap-2">
@@ -179,7 +185,7 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                   }}
                   className="shrink-0 text-[10px] underline"
                 >
-                  断开
+                  {tx("断开")}
                 </button>
               </div>
             )}
@@ -192,8 +198,9 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                     onChange={(e) => setConsent(e.target.checked)}
                     className="mt-0.5 shrink-0"
                   />
-                  我同意公开钱包与房间标识摘要的关联，并支付少量 Devnet 测试
-                  SOL（创建账户及手续费）。房间名称和私密内容不上链。
+                  {tx(
+                    "我同意公开钱包与房间标识摘要的关联，并支付少量 Devnet 测试 SOL（创建账户及手续费）。房间名称和私密内容不上链。",
+                  )}
                 </label>
                 <JourneyButton
                   className="mt-4"
@@ -208,7 +215,7 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
                     })
                   }
                 >
-                  {busy ? "请等待钱包或网络…" : "领取不可转让的 Devnet Key"}
+                  {busy ? tx("请等待钱包或网络…") : tx("领取不可转让的 Devnet Key")}
                 </JourneyButton>
               </>
             )}
@@ -232,7 +239,7 @@ function JourneyContent({ room, scope }: { room: JourneyRoom; scope: string }) {
         )}
         {notice && (
           <p role="status" className="mt-4 text-xs leading-relaxed">
-            {notice}
+            {tx(notice)}
           </p>
         )}
       </section>

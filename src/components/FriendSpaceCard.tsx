@@ -1,26 +1,24 @@
+import { useI18n, moodLabel } from "@/lib/i18n";
 import { Link } from "@tanstack/react-router";
 import type { Person } from "../lib/types";
 
 type Line = { label: string; value: React.ReactNode; key: string };
 
 export function FriendSpaceCard({ person }: { person: Person }) {
+  const { t: tx } = useI18n();
   const r = person.recent ?? {};
 
   // 按优先级收集真实存在的内容，最多 3 条
   const lines: Line[] = [];
-  if (r.mood) lines.push({ key: "mood", label: "本周", value: r.mood });
+  if (r.mood) lines.push({ key: "mood", label: "本周", value: moodLabel(r.mood, tx) });
   if (r.sentence)
     lines.push({
       key: "sentence",
       label: "写了",
-      value: (
-        <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>
-      ),
+      value: <span className="font-serif italic text-[var(--ink)]/85">「{r.sentence}」</span>,
     });
-  if (r.reading)
-    lines.push({ key: "reading", label: "在读", value: `《${r.reading.title}》` });
-  if (r.watching)
-    lines.push({ key: "watching", label: "在看", value: `《${r.watching.title}》` });
+  if (r.reading) lines.push({ key: "reading", label: "在读", value: `《${r.reading.title}》` });
+  if (r.watching) lines.push({ key: "watching", label: "在看", value: `《${r.watching.title}》` });
   if (r.listening)
     lines.push({
       key: "listening",
@@ -29,8 +27,7 @@ export function FriendSpaceCard({ person }: { person: Person }) {
         ? `${r.listening.title} · ${r.listening.artist}`
         : r.listening.title,
     });
-  if (r.weekPlan)
-    lines.push({ key: "plan", label: "想做", value: r.weekPlan });
+  if (r.weekPlan) lines.push({ key: "plan", label: "想做", value: r.weekPlan });
 
   const visible = lines.slice(0, 3);
   const hasImage = Boolean(r.imageUrl);
@@ -53,20 +50,20 @@ export function FriendSpaceCard({ person }: { person: Person }) {
       {hasImage && (
         <img
           src={r.imageUrl}
-          alt="一张图"
+          alt={tx("一张图")}
           className="mb-3 h-24 w-full rounded-lg object-cover opacity-90"
           loading="lazy"
         />
       )}
 
       {visible.length === 0 ? (
-        <p className="text-[12px] text-[var(--quiet)]">最近还没留下什么。</p>
+        <p className="text-[12px] text-[var(--quiet)]">{tx("最近还没留下什么。")}</p>
       ) : (
         <div className="space-y-2 text-[13px] leading-relaxed text-[var(--ink)]/85">
           {visible.map((l) => (
             <div key={l.key} className="truncate">
               <span className="mr-2 text-[10px] tracking-widest text-[var(--quiet)]">
-                {l.label}
+                {tx(l.label)}
               </span>
               {l.value}
             </div>

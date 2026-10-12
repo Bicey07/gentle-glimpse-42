@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
@@ -8,6 +9,7 @@ import { JourneyButton, JourneyLabel, fieldClass } from "./JourneyUi";
 
 const colors = ["#B8C9B0", "#C9D3DE", "#D7C9B8", "#CFC2D6", "#D6C2C2"];
 export function CreateRoom() {
+  const { t: tx } = useI18n();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -20,7 +22,7 @@ export function CreateRoom() {
     return (
       <JourneyButton onClick={() => setOpen(true)}>
         <Plus size={14} />
-        创建一个小世界
+        {tx("创建一个小世界")}
       </JourneyButton>
     );
   return (
@@ -44,13 +46,13 @@ export function CreateRoom() {
     >
       <div className="flex items-center justify-between">
         <JourneyLabel>A little world</JourneyLabel>
-        <button type="button" aria-label="取消创建" onClick={() => setOpen(false)}>
+        <button type="button" aria-label={tx("取消创建")} onClick={() => setOpen(false)}>
           <X size={16} />
         </button>
       </div>
-      <h2 className="my-4 font-serif text-lg">想和谁，一起做点什么？</h2>
+      <h2 className="my-4 font-serif text-lg">{tx("想和谁，一起做点什么？")}</h2>
       <label className="block text-xs">
-        小世界的名字
+        {tx("小世界的名字")}
         <input
           autoFocus
           className={fieldClass}
@@ -58,28 +60,28 @@ export function CreateRoom() {
           onChange={(e) => setName(e.target.value)}
           maxLength={40}
           required
-          placeholder="周六，一起去看展"
+          placeholder={tx("周六，一起去看展")}
         />
       </label>
       <label className="mt-4 block text-xs">
-        一张公开的邀请纸条
+        {tx("一张公开的邀请纸条")}
         <textarea
           className={fieldClass}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           maxLength={160}
           rows={2}
-          placeholder="下午两点，在美术馆门口见。"
+          placeholder={tx("下午两点，在美术馆门口见。")}
         />
       </label>
       <fieldset className="mt-4">
-        <legend className="mb-3 text-xs">给它一个颜色</legend>
+        <legend className="mb-3 text-xs">{tx("给它一个颜色")}</legend>
         <div className="flex gap-3">
           {colors.map((value, index) => (
             <button
               key={value}
               type="button"
-              aria-label={`房间颜色 ${index + 1}`}
+              aria-label={tx("房间颜色 {number}", { number: index + 1 })}
               aria-pressed={color === value}
               onClick={() => setColor(value)}
               className={`h-7 w-7 rounded-full border-2 ${color === value ? "border-[var(--ink)]" : "border-transparent"}`}
@@ -89,14 +91,14 @@ export function CreateRoom() {
         </div>
       </fieldset>
       <p className="my-4 text-[11px] leading-relaxed text-[var(--quiet)]">
-        名称和邀请纸条会随链接分享，请只填写愿意公开的信息。创建后会获得一把本地 Room Key。
+        {tx("名称和邀请纸条会随链接分享，请只填写愿意公开的信息。创建后会获得一把本地 Room Key。")}
       </p>
       {error && (
         <p role="alert" className="mb-3 text-xs text-red-800">
-          {error}
+          {tx(error)}
         </p>
       )}
-      <JourneyButton type="submit">创建并收下 Room Key</JourneyButton>
+      <JourneyButton type="submit">{tx("创建并收下 Room Key")}</JourneyButton>
     </form>
   );
 }

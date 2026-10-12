@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { KeyRound } from "lucide-react";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/invite")({
   component: InvitationPage,
 });
 function InvitationPage() {
+  const { t: tx } = useI18n();
   const { room: encoded } = Route.useSearch();
   const scope = useStore((s) => s.userId ?? "guest");
   const journey = useJourney(scope);
@@ -35,12 +37,12 @@ function InvitationPage() {
     return (
       <PageShell>
         <JourneyLabel>Room invitation</JourneyLabel>
-        <h1 className="mt-5 font-serif text-2xl">这封邀请没能打开。</h1>
+        <h1 className="mt-5 font-serif text-2xl">{tx("这封邀请没能打开。")}</h1>
         <p role="alert" className="mt-4 text-sm text-[var(--quiet)]">
-          {errorText(error)}
+          {tx(errorText(error))}
         </p>
         <Link to="/rooms" className="mt-8 inline-block text-xs underline">
-          回到小世界
+          {tx("回到小世界")}
         </Link>
       </PageShell>
     );
@@ -49,7 +51,7 @@ function InvitationPage() {
   return (
     <PageShell>
       <Link to="/rooms" className="text-xs text-[var(--quiet)]">
-        ← 小世界
+        {tx("← 小世界")}
       </Link>
       <div className="mt-10 overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--card)]">
         <div className="flex h-36 items-center justify-center" style={{ background: room.color }}>
@@ -59,11 +61,12 @@ function InvitationPage() {
           <JourneyLabel>You are invited</JourneyLabel>
           <h1 className="mt-4 font-serif text-2xl">{room.name}</h1>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--quiet)]">
-            {room.description || "一个可以慢慢待着的小世界。"}
+            {room.description || tx("一个可以慢慢待着的小世界。")}
           </p>
           <p className="my-5 text-xs leading-relaxed text-[var(--quiet)]">
-            这是一封可转发的演示邀请，尚未验证发起人身份。加入后可以收下 Room
-            Key，再选择是否放进钱包。
+            {tx(
+              "这是一封可转发的演示邀请，尚未验证发起人身份。加入后可以收下 Room Key，再选择是否放进钱包。",
+            )}
           </p>
           <JourneyButton
             disabled={!!journey.error}
@@ -76,12 +79,12 @@ function InvitationPage() {
               }
             }}
           >
-            接受邀请 · 收下 Room Key
+            {tx("接受邀请 · 收下 Room Key")}
           </JourneyButton>
           <LocalNotice />
           {(notice || journey.error) && (
             <p role="alert" className="mt-3 text-xs">
-              {notice || journey.error}
+              {tx(notice || journey.error || "")}
             </p>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { useI18n } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/friends/$id")({
 });
 
 function FriendPage() {
+  const { t: tx } = useI18n();
   const { id } = Route.useParams();
   const basePerson = findPerson(id);
   const store = useStore((s) => s);
@@ -35,10 +37,10 @@ function FriendPage() {
   if (!person || !data) {
     return (
       <PageShell>
-        <p className="py-20 text-center text-sm text-[var(--quiet)]">没有找到这个房间。</p>
+        <p className="py-20 text-center text-sm text-[var(--quiet)]">{tx("没有找到这个房间。")}</p>
         <div className="text-center">
           <Link to="/" className="text-sm text-[var(--bluegrey)]">
-            回走廊
+            {tx("回走廊")}
           </Link>
         </div>
       </PageShell>
@@ -59,7 +61,11 @@ function FriendPage() {
       setReply("");
       setNote({ ok: true, text: "已经轻轻送到了。" });
     } else {
-      setNote({ ok: false, text: res.reason === "auth" ? "登录后才能留一句。" : `没能送出：${res.message}`, login: res.reason === "auth" });
+      setNote({
+        ok: false,
+        text: res.reason === "auth" ? "登录后才能留一句。" : `没能送出：${res.message}`,
+        login: res.reason === "auth",
+      });
     }
   };
 
@@ -67,7 +73,7 @@ function FriendPage() {
     <PageShell>
       <div className="mb-6 flex items-center justify-between">
         <Link to="/friends" className="text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
-          ← 朋友们
+          {tx("← 朋友们")}
         </Link>
         <span className="text-[10px] tracking-widest text-[var(--quiet)]">Friend Space</span>
       </div>
@@ -80,7 +86,9 @@ function FriendPage() {
           />
           <span>{person.name}</span>
         </div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{person.name}的房间</h1>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">
+          {tx("{name}的房间", { name: person.name })}
+        </h1>
         <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio}</p>
       </header>
 
@@ -93,9 +101,9 @@ function FriendPage() {
 
       {/* Ta 的这一周 */}
       <section className="mb-10">
-        <SectionTitle>Ta 的这一周</SectionTitle>
+        <SectionTitle>{tx("Ta 的这一周")}</SectionTitle>
         <WeekNotes
-          title="这一周"
+          title={tx("这一周")}
           mood={r.mood}
           wish={r.weekPlan}
           freeDays={r.freeDays}
@@ -109,7 +117,7 @@ function FriendPage() {
 
       {data.books.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>书架</SectionTitle>
+          <SectionTitle>{tx("书架")}</SectionTitle>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {data.books.map((b) => (
               <div key={b.id} className="w-28 shrink-0">
@@ -131,7 +139,7 @@ function FriendPage() {
 
       {data.movies.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>影集</SectionTitle>
+          <SectionTitle>{tx("影集")}</SectionTitle>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {data.movies.map((m) => (
               <div key={m.id} className="w-36 shrink-0">
@@ -153,7 +161,7 @@ function FriendPage() {
 
       {publicSentences.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>随记</SectionTitle>
+          <SectionTitle>{tx("随记")}</SectionTitle>
           <div className="space-y-4">
             {publicSentences.map((s) => (
               <p
@@ -169,20 +177,22 @@ function FriendPage() {
 
       {/* 轻回应 */}
       <section className="mt-14">
-        <SectionTitle>留一句</SectionTitle>
+        <SectionTitle>{tx("留一句")}</SectionTitle>
         <form onSubmit={submitReply} className="space-y-3">
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}
-            placeholder="留一句话"
+            placeholder={tx("留一句话")}
             rows={2}
             className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 font-serif text-[15px] leading-relaxed outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
           />
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-[var(--quiet)]" role={note ? "status" : undefined}>
-              {note ? note.text : "只有 TA 看得到"}
+              {note ? tx(note.text) : tx("只有 TA 看得到")}
               {note?.login && (
-                <Link to="/auth" className="ml-2 text-[var(--bluegrey)]">去登录 →</Link>
+                <Link to="/auth" className="ml-2 text-[var(--bluegrey)]">
+                  {tx("去登录 →")}
+                </Link>
               )}
             </span>
             <button
@@ -190,7 +200,7 @@ function FriendPage() {
               disabled={busy}
               className="disabled:opacity-50 rounded-full border border-[var(--ink)] px-5 py-1.5 text-xs text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
             >
-              {busy ? "送出中…" : "轻轻送出"}
+              {busy ? tx("送出中…") : tx("轻轻送出")}
             </button>
           </div>
         </form>
@@ -202,7 +212,9 @@ function FriendPage() {
                 key={rp.id}
                 className="rounded-xl border border-[var(--border)] bg-[var(--card)]/60 px-4 py-2 text-[13px] text-[var(--ink)]/80"
               >
-                <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">你</span>
+                <span className="text-[10px] tracking-widest text-[var(--quiet)] mr-2">
+                  {tx("你")}
+                </span>
                 {rp.text}
               </li>
             ))}
