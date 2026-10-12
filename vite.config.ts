@@ -1,15 +1,28 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, cloudflare (build-only),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... } }) if needed.
+// The Lovable config already provides React, TanStack, Tailwind and Nitro.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath } from "node:url";
 
-// Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-// @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 export default defineConfig({
-  tanstackStart: {
-    server: { entry: "server" },
+  plugins: [
+    {
+      name: "quiet-space-buffer",
+      enforce: "post",
+      config(_config, environment) {
+        // Nitro aliases builtins late. Keep the Solana browser SDK's Buffer bundled.
+        const buffer = fileURLToPath(new URL("./node_modules/buffer/index.js", import.meta.url));
+        const find =
+          environment.command === "build" ? /^(node:)?buffer(?:\/index\.js)?$/ : /^(node:)?buffer$/;
+        return { resolve: { alias: [{ find, replacement: buffer }] } };
+      },
+    },
+  ],
+  vite: {
+    // Action routes supply their own CORS headers, including preflight responses.
+    server: { cors: false },
+    environments: {
+      // Solana packages expose browser/node conditions; Workers use the browser builds.
+      nitro: { resolve: { conditions: ["workerd", "browser", "module", "import", "default"] } },
+    },
   },
+  tanstackStart: { server: { entry: "server" } },
 });

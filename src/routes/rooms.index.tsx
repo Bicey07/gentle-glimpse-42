@@ -3,12 +3,21 @@ import { PageShell } from "../components/PageShell";
 import { RoomCard } from "../components/RoomCard";
 import { SectionTitle } from "../components/SectionTitle";
 import { rooms, friends, me } from "../data/mockData";
+import { CreateRoom } from "../components/rooms/CreateRoom";
+import { RoomPassport } from "../components/rooms/RoomPassport";
+import { useJourney } from "../lib/rooms/store";
+import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/rooms/")({
   component: RoomsPage,
 });
 
 function RoomsPage() {
+  const scope = useStore((s) => s.userId ?? "guest");
+  const journey = useJourney(scope);
+  const customRooms = journey.state.rooms.filter(
+    (room) => !rooms.some((seed) => seed.id === room.id),
+  );
   // 把所有人的空闲日聚合成一个柔和的「大家的时间」
   const everyone = [me, ...friends];
   const slots = everyone
@@ -24,14 +33,32 @@ function RoomsPage() {
 
   return (
     <PageShell>
-      <Link to="/" className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]">
+      <Link
+        to="/"
+        className="mb-6 inline-block text-xs text-[var(--quiet)] hover:text-[var(--ink)]"
+      >
         ← 走廊
       </Link>
       <header className="mb-10">
-        <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">Shared Rooms</div>
+        <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
+          Shared Rooms
+        </div>
         <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">一些小世界</h1>
         <p className="mt-2 text-sm text-[var(--quiet)]">里面有几个人在安静地待着。</p>
       </header>
+
+      <RoomPassport />
+      <div className="mb-10">
+        <CreateRoom />
+      </div>
+      {customRooms.length > 0 && (
+        <section className="mb-10">
+          <SectionTitle>我创建或加入的小世界</SectionTitle>
+          {customRooms.map((room) => (
+            <RoomCard key={room.id} room={{ ...room, presence: "演示房间" }} />
+          ))}
+        </section>
+      )}
 
       {/* 大家的时间 */}
       {(slots.length > 0 || wishes.length > 0) && (
@@ -40,9 +67,7 @@ function RoomsPage() {
             <span className="text-[10px] tracking-[0.28em] text-[var(--quiet)]">
               EVERYONE'S WEEK
             </span>
-            <span className="font-serif text-[12px] italic text-[var(--quiet)]">
-              大家的时间
-            </span>
+            <span className="font-serif text-[12px] italic text-[var(--quiet)]">大家的时间</span>
           </div>
 
           {wishes.length > 0 && (

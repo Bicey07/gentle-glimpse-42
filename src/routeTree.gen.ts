@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ActionsDotjsonRouteImport } from './routes/actions[.]json'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as InviteRouteImport } from './routes/invite'
 import { Route as MeRouteImport } from './routes/me'
+import { Route as ApiRoomKeyRouteImport } from './routes/api.room-key'
 import { Route as FriendsIndexRouteImport } from './routes/friends.index'
 import { Route as FriendsIdRouteImport } from './routes/friends.$id'
 import { Route as RoomsIndexRouteImport } from './routes/rooms.index'
@@ -21,6 +24,11 @@ import { Route as RoomsIdRouteImport } from './routes/rooms.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActionsDotjsonRoute = ActionsDotjsonRouteImport.update({
+  id: '/actions.json',
+  path: '/actions.json',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddRoute = AddRouteImport.update({
@@ -33,9 +41,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MeRoute = MeRouteImport.update({
   id: '/me',
   path: '/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoomKeyRoute = ApiRoomKeyRouteImport.update({
+  id: '/api/room-key',
+  path: '/api/room-key',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsIndexRoute = FriendsIndexRouteImport.update({
@@ -61,9 +79,12 @@ const RoomsIdRoute = RoomsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/actions.json': typeof ActionsDotjsonRoute
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
+  '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/friends/': typeof FriendsIndexRoute
@@ -71,9 +92,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/actions.json': typeof ActionsDotjsonRoute
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
+  '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/friends': typeof FriendsIndexRoute
@@ -82,9 +106,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/actions.json': typeof ActionsDotjsonRoute
   '/add': typeof AddRoute
   '/auth': typeof AuthRoute
+  '/invite': typeof InviteRoute
   '/me': typeof MeRoute
+  '/api/room-key': typeof ApiRoomKeyRoute
   '/friends/$id': typeof FriendsIdRoute
   '/rooms/$id': typeof RoomsIdRoute
   '/friends/': typeof FriendsIndexRoute
@@ -94,9 +121,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/actions.json'
     | '/add'
     | '/auth'
+    | '/invite'
     | '/me'
+    | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
     | '/friends/'
@@ -104,9 +134,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/actions.json'
     | '/add'
     | '/auth'
+    | '/invite'
     | '/me'
+    | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
     | '/friends'
@@ -114,9 +147,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/actions.json'
     | '/add'
     | '/auth'
+    | '/invite'
     | '/me'
+    | '/api/room-key'
     | '/friends/$id'
     | '/rooms/$id'
     | '/friends/'
@@ -125,9 +161,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActionsDotjsonRoute: typeof ActionsDotjsonRoute
   AddRoute: typeof AddRoute
   AuthRoute: typeof AuthRoute
+  InviteRoute: typeof InviteRoute
   MeRoute: typeof MeRoute
+  ApiRoomKeyRoute: typeof ApiRoomKeyRoute
   FriendsIdRoute: typeof FriendsIdRoute
   RoomsIdRoute: typeof RoomsIdRoute
   FriendsIndexRoute: typeof FriendsIndexRoute
@@ -141,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/actions.json': {
+      id: '/actions.json'
+      path: '/actions.json'
+      fullPath: '/actions.json'
+      preLoaderRoute: typeof ActionsDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add': {
@@ -157,11 +203,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/me': {
       id: '/me'
       path: '/me'
       fullPath: '/me'
       preLoaderRoute: typeof MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/room-key': {
+      id: '/api/room-key'
+      path: '/api/room-key'
+      fullPath: '/api/room-key'
+      preLoaderRoute: typeof ApiRoomKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends/': {
@@ -197,9 +257,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActionsDotjsonRoute: ActionsDotjsonRoute,
   AddRoute: AddRoute,
   AuthRoute: AuthRoute,
+  InviteRoute: InviteRoute,
   MeRoute: MeRoute,
+  ApiRoomKeyRoute: ApiRoomKeyRoute,
   FriendsIdRoute: FriendsIdRoute,
   RoomsIdRoute: RoomsIdRoute,
   FriendsIndexRoute: FriendsIndexRoute,

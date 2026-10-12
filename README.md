@@ -19,6 +19,9 @@ Quiet Space asks a different question: what if a social product helped people st
 
 ## Current Prototype / Working Flows
 
+- A Rooms demo journey: create a little world, share an invitation, collect local Room Keys in a portable JSON passport, and leave Shared Memories with optional covers.
+- Optional real Solana Devnet Token-2022 non-transferable Room Keys and salted Shared Memory proof receipts; public Action endpoints support Room Blinks after HTTPS deployment. These are self-issued demo credentials, not verified membership or multi-party attendance. [Demo and limitations](docs/rooms-demo.md).
+- Email authentication and Supabase-backed entries, friends, room membership and private notes when the existing backend is configured.
 - A corridor-style home that summarizes your space, friends' spaces, shared rooms, and recent traces.
 - An interactive memory room with a character, gentle furnishings, and an optional generated ambient soundscape.
 - Client-side AES-GCM memory capsules that turn encrypted notes or uploaded object photos into room objects, with an anniversary ritual and a SHA-256 integrity proof.
@@ -39,9 +42,9 @@ Quiet Space asks a different question: what if a social product helped people st
 
 ## Current Stage
 
-Quiet Space is a functional front-end prototype built with React, TanStack Start, Tailwind CSS, and Lovable. The main interaction paths work in a single browser, but all people and initial content are simulated.
+Quiet Space is a prototype built with React, TanStack Start, Tailwind CSS, and Lovable. Guests see simulated people and initial content. Configured Supabase sessions use the existing cloud data flows; there is no real-time collaboration.
 
-There is currently no authentication, database, real friend graph, encrypted media hosting service, or real-time multi-user behavior. New prototype data and encrypted photos are stored only in the browser's local storage. Memory capsules are genuinely encrypted in the browser, and users with Phantom can anchor a content proof to Solana Devnet; the private text and image never enter the transaction.
+The new Room Passport and Shared Memory journey is a separate browser-local demo, scoped to the guest or signed-in account. Shared Memory content is unencrypted local data; it is not automatically shared or uploaded. Existing memory capsules retain their client-side encryption. Optional Phantom transactions use Solana Devnet; private text and images never enter those transactions. A local Room Key does not grant access to private Supabase room notes.
 
 ## Hacker House Build Goal
 
@@ -61,7 +64,7 @@ Solo founder leading product direction, interaction design, prototyping, and use
 
 ## Development
 
-Requirements: Node.js and npm.
+Requirements: Node.js 22.16+ and npm.
 
 ```bash
 git clone https://github.com/Bicey07/gentle-glimpse-42.git
@@ -75,6 +78,8 @@ Useful commands:
 ```bash
 npm run build
 npm run lint
+npm run typecheck
+npm run test:rooms
 ```
 
 This project is connected to Lovable. Changes pushed to `main` remain available in the Lovable editor.
