@@ -1,6 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
+import { MemoryRoom } from "../components/MemoryRoom";
 import { MySpaceCard } from "../components/MySpaceCard";
 import { FriendSpaceCard } from "../components/FriendSpaceCard";
 import { RoomCard } from "../components/RoomCard";
@@ -69,7 +70,9 @@ function SpacePage() {
             {tx("登录 / 注册")}
           </Link>
         </section>
-      ) : null}
+      ) : (
+        <MemoryRoom name={me.name || tx("你的房间")} />
+      )}
 
       {/* Quick actions */}
       <section className="mb-14">
