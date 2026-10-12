@@ -8,7 +8,7 @@ export function SectionTitle({
   aside?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between">
+    <div className="reverie-section-title mb-5 flex items-end justify-between gap-4">
       <h2 className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
         {children}
       </h2>

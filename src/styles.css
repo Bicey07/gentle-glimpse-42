@@ -46,15 +46,15 @@
   --radius: 1rem;
 
   /* Quiet palette in oklch */
-  --paper: oklch(0.965 0.012 85);
-  --bluegrey: oklch(0.66 0.035 240);
-  --sage: oklch(0.81 0.04 140);
-  --ink: oklch(0.32 0.012 60);
-  --quiet: oklch(0.55 0.012 60);
+  --paper: #f4efe3;
+  --bluegrey: #426574;
+  --sage: #b9c6b2;
+  --ink: #24463f;
+  --quiet: #626f67;
 
   --background: var(--paper);
   --foreground: var(--ink);
-  --card: oklch(0.985 0.008 85);
+  --card: #fbf7ed;
   --card-foreground: var(--ink);
   --popover: oklch(0.985 0.008 85);
   --popover-foreground: var(--ink);
@@ -68,13 +68,78 @@
   --accent-foreground: var(--ink);
   --destructive: oklch(0.6 0.15 25);
   --destructive-foreground: var(--paper);
-  --border: oklch(0.9 0.01 85);
-  --input: oklch(0.9 0.01 85);
+  --border: #d6cfba;
+  --input: #d6cfba;
   --ring: var(--bluegrey);
 }
 
 .dark {
   color-scheme: light;
+}
+
+/* Mineral pigments, silk borders, and the generous mat of a framed painting. */
+.reverie-shell {
+  background: radial-gradient(ellipse at 12% 8%, #335e55, transparent 55%), #142f30;
+  min-height: 100dvh;
+  padding: 24px 20px 0;
+}
+.reverie-page {
+  max-width: 760px;
+  min-height: calc(100dvh - 24px);
+  background: var(--paper);
+  border: 1px solid #b5aa8c;
+  box-shadow: 0 0 0 6px #142f30, 0 0 0 7px #75816b, 0 24px 90px #081d2566;
+  position: relative;
+}
+.reverie-page::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: .22;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%239d967c' opacity='.2' filter='url(%23n)' d='M0 0h160v160H0z'/%3E%3C/svg%3E");
+}
+.reverie-topbar, .reverie-content { position: relative; }
+.reverie-topbar { padding: 4px 0 18px; border-bottom: 1px solid var(--border); }
+.reverie-wordmark { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .18em; }
+.reverie-wordmark small { display: block; margin-top: 5px; font-size: 7px; letter-spacing: .15em; color: var(--quiet); }
+.reverie-seal { display: grid; place-items: center; width: 32px; height: 38px; border: 1px solid #996b68; color: #996b68; font-family: var(--font-serif); font-size: 20px; }
+.reverie-art { position: relative; height: 174px; overflow: hidden; background: linear-gradient(115deg, #173e3c, #385b76); margin: 6px 0 32px; border: 5px solid #e6deca; outline: 1px solid var(--border); }
+.reverie-art svg { width: 100%; height: 100%; }
+.reverie-art-caption { position: absolute; left: 28px; top: 48px; color: #f0e4cc; }
+.reverie-art-caption span { display: block; font-family: var(--font-serif); font-size: 24px; letter-spacing: .25em; }
+.reverie-art-caption small { display: block; margin-top: 12px; font-size: 8px; letter-spacing: .22em; }
+.reverie-content { max-width: 540px; margin: 0 auto; }
+.reverie-content > header { padding-bottom: 22px; border-bottom: 1px solid var(--border); }
+.reverie-content h1 { letter-spacing: .055em; text-wrap: balance; }
+.reverie-content h2 { letter-spacing: .055em; }
+.reverie-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) { background-color: #fbf7ed; border-radius: 3px; padding: 12px; }
+.reverie-content input::placeholder, .reverie-content textarea::placeholder { color: #788078; }
+.reverie-shell :is(a, button, input, textarea, select):focus-visible { outline: 2px solid #a37780; outline-offset: 4px; }
+.reverie-content a.group { border-radius: 4px; background-color: var(--card); box-shadow: 0 3px 0 #dfd7c64d; transition: border-color .2s, box-shadow .2s; }
+.reverie-content a.group:hover { border-color: #9b9e87; box-shadow: 0 5px 18px #24463f12; }
+.reverie-content section > .grid > a.group:nth-child(2n) { background: #eee5e2; }
+.reverie-content section > .grid > a.group:nth-child(3n) { background: #e8eee8; }
+.reverie-content section > .grid > a.group { padding: 22px 18px; border-top: 2px solid #879e96; }
+.reverie-section-title { position: relative; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+.reverie-section-title h2 { color: #49665c; font-size: 11px; }
+.reverie-section-title::after { content: ""; width: 24px; height: 2px; position: absolute; bottom: -1px; left: 0; background: #a4777c; }
+.reverie-nav { width: min(600px, calc(100% - 28px)); margin: 0 auto max(12px, env(safe-area-inset-bottom)); border: 1px solid #829787; border-radius: 8px; background: #173e3cf5; box-shadow: 0 8px 30px #102d3033; }
+.reverie-nav > div { max-width: none; padding: 9px 8px; }
+.reverie-nav a { min-height: 46px; min-width: 48px; justify-content: center; border-radius: 4px; padding: 6px 10px; }
+.reverie-nav a[aria-current="page"] { background: #456359; box-shadow: inset 0 -2px #d2b69a; }
+.reverie-nav a:hover { background: #33564e; }
+@media (max-width: 540px) {
+  .reverie-shell { padding: 0; }
+  .reverie-page { border: 0; box-shadow: none; padding-left: 20px; padding-right: 20px; }
+  .reverie-topbar { row-gap: 15px; }
+  .reverie-wordmark { font-size: 9px; }
+  .reverie-wordmark small { display: none; }
+  .reverie-topbar > div { gap: 5px; }
+  .reverie-topbar button { padding-left: 8px; padding-right: 8px; }
+  .reverie-art { height: 145px; margin-bottom: 28px; }
+  .reverie-art-caption { left: 18px; top: 39px; }
+  .reverie-art-caption span { font-size: 20px; }
 }
 
 @layer base {
