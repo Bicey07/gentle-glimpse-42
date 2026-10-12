@@ -47,13 +47,14 @@ function AddPage() {
   const [movieTitle, setMovieTitle] = useState("");
   const [movieDir, setMovieDir] = useState("");
   const [movieNote, setMovieNote] = useState("");
+  const [posterLoading, setPosterLoading] = useState(false);
   const [moviePoster, setMoviePoster] = useState<File | null>(null);
   const [mood, setMood] = useState("平静");
   const [moodExtra, setMoodExtra] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (busy) return;
+    if (busy || posterLoading) return;
     setError(null);
     setNeedLogin(false);
     setBusy(true);
@@ -203,7 +204,7 @@ function AddPage() {
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
-            <PosterUpload file={moviePoster} onChange={setMoviePoster} disabled={busy} />
+            <PosterUpload file={moviePoster} onChange={setMoviePoster} disabled={busy} onLoadingChange={setPosterLoading} />
           </div>
         )}
 
@@ -288,7 +289,7 @@ function AddPage() {
           )}
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || posterLoading}
             className="w-full rounded-full border border-[var(--ink)] bg-transparent py-3 font-serif text-[15px] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
           >
             {busy ? tx("正在放进房间…") : tx("放进我的房间")}
