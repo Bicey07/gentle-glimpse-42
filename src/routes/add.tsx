@@ -1,6 +1,7 @@
 import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
+import { PosterUpload } from "../components/PosterUpload";
 import { PageShell } from "../components/PageShell";
 import { actions, useStore, type ActionResult, type Visibility } from "../lib/store";
 
@@ -202,10 +203,7 @@ function AddPage() {
               rows={3}
               className="w-full resize-none rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-[15px] outline-none placeholder:text-[var(--quiet)]/60 focus:border-[var(--bluegrey)]"
             />
-            <label className="block rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/60 p-4 text-center text-sm text-[var(--quiet)]">
-              <span>{moviePoster ? moviePoster.name : tx("上传电影海报（可选）")}</span>
-              <input type="file" accept="image/*" onChange={(e) => setMoviePoster(e.target.files?.[0] ?? null)} className="sr-only" />
-            </label>
+            <PosterUpload file={moviePoster} onChange={setMoviePoster} disabled={busy} />
           </div>
         )}
 
