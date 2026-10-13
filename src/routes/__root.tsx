@@ -1,3 +1,4 @@
+import { DoorInboxProvider } from "../components/DoorInbox";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -161,7 +162,7 @@ function RootComponent() {
       <LocalizedMetadata />
       <PwaRegistration />
       <AuthSync />
-      <Outlet />
+      <DoorInboxProvider><Outlet /></DoorInboxProvider>
     </QueryClientProvider>
   );
 }

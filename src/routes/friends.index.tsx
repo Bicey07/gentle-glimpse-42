@@ -59,7 +59,6 @@ function FriendsPage() {
 function FriendDoor() {
   const { t: tx } = useI18n();
   const userId = useStore((s) => s.userId);
-  const incoming = useStore((s) => s.incomingRequests);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -74,36 +73,8 @@ function FriendDoor() {
     if (res.ok) setCode("");
   };
 
-  const accept = async (id: string) => {
-    setBusy(true);
-    const res = await actions.acceptFriend(id);
-    setBusy(false);
-    setMsg(res.ok ? "门打开了。" : `没能开门：${res.message}`);
-  };
-
   return (
     <section className="mt-14 space-y-6 rounded-[24px] border border-[var(--border)] bg-[var(--card)]/60 p-5">
-      {incoming.length > 0 && (
-        <div>
-          <div className="mb-3 text-[10px] tracking-[0.28em] text-[var(--quiet)]">
-            {tx("有人在敲门")}
-          </div>
-          <ul className="space-y-2">
-            {incoming.map((r) => (
-              <li key={r.id} className="flex items-center justify-between text-sm">
-                <span className="font-serif">{r.fromName}</span>
-                <button
-                  disabled={busy}
-                  onClick={() => accept(r.id)}
-                  className="rounded-full border border-[var(--ink)] px-4 py-1 text-xs hover:bg-[var(--ink)] hover:text-[var(--paper)] disabled:opacity-50"
-                >
-                  {tx("开门")}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
       <div>
         <div className="mb-2 text-[10px] tracking-[0.28em] text-[var(--quiet)]">
           {tx("我的好友码")}

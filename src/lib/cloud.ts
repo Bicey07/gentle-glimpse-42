@@ -20,6 +20,19 @@ export interface FriendRequest {
   fromName: string;
 }
 
+// Keep the door independent of unrelated room/entry loading failures.
+export async function loadFriendInbox(userId: string): Promise<FriendRequest[]> {
+  const { data, error } = await supabase.from("friendships").select("id, requester_id")
+    .eq("addressee_id", userId).eq("status", "pending").order("created_at");
+  fail(error);
+  if (!data?.length) return [];
+  const profiles = await supabase.from("profiles").select("id, display_name")
+    .in("id", data.map(row => row.requester_id));
+  fail(profiles.error);
+  return data.map(row => ({ id: row.id, fromId: row.requester_id,
+    fromName: profiles.data?.find(p => p.id === row.requester_id)?.display_name || "一位朋友" }));
+}
+
 export interface CloudSnapshot {
   me: Person;
   friends: Person[];
@@ -258,9 +271,10 @@ export async function requestFriend(userId: string, code: string) {
 }
 
 export async function acceptFriend(friendshipId: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("friendships")
     .update({ status: "accepted" })
-    .eq("id", friendshipId);
+    .eq("id", friendshipId).eq("status", "pending").select("id");
   fail(error);
+  if (!data?.length) throw new Error("这次敲门已处理或已失效，请刷新信箱。");
 }

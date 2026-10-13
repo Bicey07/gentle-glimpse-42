@@ -1,3 +1,4 @@
+import { DoorInbox } from "./DoorInbox";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -44,6 +45,7 @@ export function PageShell({ children }: { children: ReactNode }) {
           </svg>
           <div className="reverie-art-caption"><span>日常 · 收藏</span><small>THE ART OF SLOW LIVING</small></div>
         </div>
+        <DoorInbox />
         <main id="main-content" className="reverie-content">{children}</main>
       </div>
       <BottomNav />
