@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { SectionTitle } from "../components/SectionTitle";
-import { actions, useStore } from "../lib/store";
+import { actions, session, useStore } from "../lib/store";
 import { useJourney } from "../lib/rooms/store";
 import { RoomJourney } from "../components/rooms/RoomJourney";
 
@@ -17,7 +17,9 @@ function RoomPage() {
   const scope = useStore((s) => s.userId ?? "guest");
   const journey = useJourney(scope);
   const localRoom = journey.state.rooms.find((r) => r.id === id);
-  const room = localRoom ? { ...localRoom, presence: tx("本地创建的房间") } : undefined;
+  const cloudRooms = useStore((s) => s.rooms);
+  const cloudRoom = cloudRooms.find((r) => r.id === id);
+  const room = cloudRoom ?? (localRoom ? { ...localRoom, presence: tx("本地创建的房间") } : undefined);
 
   // Select the whole array (stable ref); derive filtered list in useMemo.
   const allNotes = useStore((s) => s.roomNotes);
@@ -33,6 +35,7 @@ function RoomPage() {
   const mode = useStore((s) => s.mode);
   const myRooms = useStore((s) => s.myRooms);
   const loading = useStore((s) => s.loading);
+  const loadError = useStore((s) => s.loadError);
 
   const everyone: Array<{ name: string; color: string; recent?: { freeDays?: string[] } }> = [];
   const freeSlots = useMemo(
@@ -55,8 +58,14 @@ function RoomPage() {
           ← Rooms
         </Link>
         <p className="py-20 text-center font-serif text-[15px] text-[var(--quiet)]">
-          {tx("房间不存在。")}
+          {loading ? tx("正在推开门…") : loadError
+            ? tx("暂时没能读取房间，请重试。")
+            : mode !== "cloud" ? tx("请先登录，再打开这个房间。")
+            : tx("房间不存在，或你暂时没有访问权限。") }
         </p>
+        {loadError && !loading && <button type="button" onClick={() => void session.refresh()}
+          className="rounded-full border border-[var(--border)] px-5 py-2 text-sm">{tx("重试")}</button>}
+        {mode !== "cloud" && !loading && <Link to="/auth" className="text-sm underline">{tx("登录 / 注册")}</Link>}
       </PageShell>
     );
   }

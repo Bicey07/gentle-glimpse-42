@@ -1,9 +1,8 @@
 import { useI18n } from "@/lib/i18n";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Plus, X } from "lucide-react";
-import { actions, useStore } from "../../lib/store";
-import { useJourney } from "../../lib/rooms/store";
+import { actions } from "../../lib/store";
 import { errorText, roomSchema } from "../../lib/rooms/model";
 import { JourneyButton, JourneyLabel, fieldClass } from "./JourneyUi";
 
@@ -15,8 +14,8 @@ export function CreateRoom() {
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(colors[0]);
   const [error, setError] = useState("");
-  const scope = useStore((s) => s.userId ?? "guest");
-  const journey = useJourney(scope);
+  const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
   const navigate = useNavigate();
   if (!open)
     return (
@@ -28,8 +27,12 @@ export function CreateRoom() {
   return (
     <form
       className="mb-7 rounded-[24px] border border-[var(--border)] bg-[var(--card)] p-5"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
+        if (submitting.current) return;
+        submitting.current = true;
+        setBusy(true);
+        setError("");
         try {
           const room = roomSchema.parse({
             id: `room-${crypto.randomUUID()}`,
@@ -37,21 +40,23 @@ export function CreateRoom() {
             description,
             color,
           });
-          void actions.createRoom({ ...room, presence: "房间成员" }).then((result) => {
-            if (!result.ok) {
-              setError(result.message);
-              return;
-            }
-            void navigate({ to: "/rooms/$id", params: { id: room.id } });
-          });
+          const result = await actions.createRoom({ ...room, presence: "房间成员" });
+          if (!result.ok) {
+            setError(result.message);
+            return;
+          }
+          void navigate({ to: "/rooms/$id", params: { id: room.id } });
         } catch (error) {
           setError(errorText(error));
+        } finally {
+          submitting.current = false;
+          setBusy(false);
         }
       }}
     >
       <div className="flex items-center justify-between">
         <JourneyLabel>A little world</JourneyLabel>
-        <button type="button" aria-label={tx("取消创建")} onClick={() => setOpen(false)}>
+        <button type="button" disabled={busy} aria-label={tx("取消创建")} onClick={() => setOpen(false)}>
           <X size={16} />
         </button>
       </div>
@@ -96,14 +101,14 @@ export function CreateRoom() {
         </div>
       </fieldset>
       <p className="my-4 text-[11px] leading-relaxed text-[var(--quiet)]">
-        {tx("名称和邀请纸条会随链接分享，请只填写愿意公开的信息。创建后会获得一把本地 Room Key。")}
+        {tx("名称和邀请纸条会随链接分享，请只填写愿意公开的信息。房间会保存到云端。")}
       </p>
       {error && (
         <p role="alert" className="mb-3 text-xs text-red-800">
           {tx(error)}
         </p>
       )}
-      <JourneyButton type="submit">{tx("创建并收下 Room Key")}</JourneyButton>
+      <JourneyButton type="submit" disabled={busy}>{busy ? tx("正在创建…") : tx("创建房间")}</JourneyButton>
     </form>
   );
 }
