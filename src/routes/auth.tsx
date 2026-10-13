@@ -1,11 +1,17 @@
 import { useI18n } from "@/lib/i18n";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useStore } from "../lib/store";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+    next:
+      typeof search.next === "string" && /^\/invite\?token=[a-f0-9]{64}$/.test(search.next)
+        ? search.next
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "登录 · Reverie" },
@@ -30,6 +36,10 @@ function AuthPage() {
   const userEmail = useStore((s) => s.email);
   const signedIn = useStore((s) => s.mode === "cloud");
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  useEffect(() => {
+    if (signedIn && next) void navigate({ href: next });
+  }, [signedIn, next, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,16 +54,19 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       setBusy(false);
       if (error) return setMsg({ kind: "err", text: "没能进门：邮箱或密码不对，或邮箱还没确认。" });
-      navigate({ to: "/me" });
+      next ? navigate({ href: next }) : navigate({ to: "/me" });
     } else {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { emailRedirectTo: window.location.origin, data: { display_name: name.trim() } },
+        options: {
+          emailRedirectTo: window.location.origin + (next || "/"),
+          data: { display_name: name.trim() },
+        },
       });
       setBusy(false);
       if (error) return setMsg({ kind: "err", text: `没能创建房间：${error.message}` });
-      if (data.session) navigate({ to: "/me" });
+      if (data.session) next ? navigate({ href: next }) : navigate({ to: "/me" });
       else setMsg({ kind: "ok", text: "确认邮件已经寄出，点开邮件里的链接后再回来登录。" });
     }
   };

@@ -48,13 +48,14 @@ function RoomsPage() {
         <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--quiet)]">
           Shared Rooms
         </div>
-        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{tx("一些小世界")}</h1>
-        <p className="mt-2 text-sm text-[var(--quiet)]">{tx("里面有几个人在安静地待着。")}</p>
+        <h1 className="mt-3 font-serif text-2xl text-[var(--ink)]">{tx("我们的小世界")}</h1>
+        <p className="mt-2 text-sm text-[var(--quiet)]">
+          {tx("和朋友一起写东西、放资料、聊想法。")}
+        </p>
       </header>
 
       {mode === "cloud" ? (
         <>
-          <RoomPassport />
           <div className="mb-10">
             <CreateRoom />
           </div>

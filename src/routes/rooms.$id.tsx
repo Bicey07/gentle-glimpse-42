@@ -1,3 +1,4 @@
+import { RoomWorkspace } from "../components/rooms/RoomWorkspace";
 import { useI18n } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -19,7 +20,8 @@ function RoomPage() {
   const localRoom = journey.state.rooms.find((r) => r.id === id);
   const cloudRooms = useStore((s) => s.rooms);
   const cloudRoom = cloudRooms.find((r) => r.id === id);
-  const room = cloudRoom ?? (localRoom ? { ...localRoom, presence: tx("本地创建的房间") } : undefined);
+  const room =
+    cloudRoom ?? (localRoom ? { ...localRoom, presence: tx("本地创建的房间") } : undefined);
 
   // Select the whole array (stable ref); derive filtered list in useMemo.
   const allNotes = useStore((s) => s.roomNotes);
@@ -58,17 +60,48 @@ function RoomPage() {
           ← Rooms
         </Link>
         <p className="py-20 text-center font-serif text-[15px] text-[var(--quiet)]">
-          {loading ? tx("正在推开门…") : loadError
-            ? tx("暂时没能读取房间，请重试。")
-            : mode !== "cloud" ? tx("请先登录，再打开这个房间。")
-            : tx("房间不存在，或你暂时没有访问权限。") }
+          {loading
+            ? tx("正在推开门…")
+            : loadError
+              ? tx("暂时没能读取房间，请重试。")
+              : mode !== "cloud"
+                ? tx("请先登录，再打开这个房间。")
+                : tx("房间不存在，或你暂时没有访问权限。")}
         </p>
-        {loadError && !loading && <button type="button" onClick={() => void session.refresh()}
-          className="rounded-full border border-[var(--border)] px-5 py-2 text-sm">{tx("重试")}</button>}
-        {mode !== "cloud" && !loading && <Link to="/auth" className="text-sm underline">{tx("登录 / 注册")}</Link>}
+        {loadError && !loading && (
+          <button
+            type="button"
+            onClick={() => void session.refresh()}
+            className="rounded-full border border-[var(--border)] px-5 py-2 text-sm"
+          >
+            {tx("重试")}
+          </button>
+        )}
+        {mode !== "cloud" && !loading && (
+          <Link to="/auth" className="text-sm underline">
+            {tx("登录 / 注册")}
+          </Link>
+        )}
       </PageShell>
     );
   }
+
+  if (cloudRoom)
+    return (
+      <PageShell>
+        <Link to="/rooms" className="mb-6 inline-block text-xs text-[var(--quiet)]">
+          ← 小世界
+        </Link>
+        <header className="mb-8">
+          <p className="text-[10px] tracking-[.25em] text-[var(--quiet)]">SHARED WORKSPACE</p>
+          <h1 className="mt-3 break-words font-serif text-2xl">{cloudRoom.name}</h1>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--quiet)]">
+            {cloudRoom.description}
+          </p>
+        </header>
+        <RoomWorkspace room={cloudRoom} />
+      </PageShell>
+    );
 
   const people: string[] = [];
   const isExhibition = false;
