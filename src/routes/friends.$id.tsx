@@ -2,7 +2,7 @@ import { useI18n } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "../components/PageShell";
-import { FriendRoomScene } from "../components/FriendRoomScene";
+import { MyRoomScene } from "../components/MyRoomScene";
 import { SectionTitle } from "../components/SectionTitle";
 import { WeekNotes } from "../components/WeekNotes";
 import { actions, useStore, personEntriesFromStore } from "../lib/store";
@@ -90,7 +90,9 @@ function FriendPage() {
         <p className="mt-1 text-sm text-[var(--quiet)]">{person.bio}</p>
       </header>
 
-      <FriendRoomScene
+      <MyRoomScene
+        key={person.id}
+        view="visitor"
         person={person}
         books={data.books}
         movies={data.movies}

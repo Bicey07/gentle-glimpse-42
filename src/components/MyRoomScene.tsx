@@ -4,8 +4,10 @@ import { useI18n } from "../lib/i18n";
 import type { BookEntry, ImageEntry, MovieEntry, Person } from "../lib/types";
 
 type Spot = "窗边" | "书架" | "小银幕" | "唱片机" | "桌上便签";
-export function MyRoomScene({ person, books, movies, images }: { person: Person; books: BookEntry[]; movies: MovieEntry[]; images: ImageEntry[] }) {
+export function MyRoomScene({ person, books, movies, images, view = "owner" }: { view?: "owner" | "visitor"; person: Person; books: BookEntry[]; movies: MovieEntry[]; images: ImageEntry[] }) {
   const { t: tx } = useI18n();
+  const visiting = view === "visitor";
+  const roomTitle = visiting ? tx("{name}的房间", { name: person.name }) : tx("我的小屋");
   const [spot, setSpot] = useState<Spot>("窗边");
   const [selected, setSelected] = useState<{ title: string; note?: string } | null>(null);
   const [bookPage, setBookPage] = useState(0);
@@ -19,14 +21,14 @@ export function MyRoomScene({ person, books, movies, images }: { person: Person;
   const recent = person.recent;
   const details: Record<Spot, string> = {
     窗边: recent?.mood || tx("窗外有远山，屋里有一盏温柔的灯。"),
-    书架: books[0]?.title || recent?.reading?.title || tx("书架已经安好，等你放进第一本喜欢的书。"),
+    书架: books[0]?.title || recent?.reading?.title || (visiting ? tx("书架") : tx("书架已经安好，等你放进第一本喜欢的书。")),
     小银幕: wallMovie?.title || recent?.watching?.title || tx("留一面银幕，给下次想看的电影。"),
-    唱片机: recent?.listening?.title || tx("唱片机静静等着你喜欢的声音。"),
-    桌上便签: recent?.sentence || recent?.weekPlan || tx("今天想留下什么？几个字也可以。"),
+    唱片机: recent?.listening?.title || (visiting ? tx("唱片机") : tx("唱片机静静等着你喜欢的声音。")),
+    桌上便签: recent?.sentence || recent?.weekPlan || (visiting ? tx("桌上便签") : tx("今天想留下什么？几个字也可以。")),
   };
   const things = spot === "书架" ? books.map(b => ({ id:b.id, src:b.cover, title:b.title, note:b.note })) : spot === "小银幕" ? movies.map(m => ({ id:m.id, src:m.cover, title:m.title, note:m.note })) : spot === "窗边" ? images.map(i => ({ id:i.id, src:i.url, title:i.caption || tx("一张照片"), note:i.caption })) : [];
-  return <section className="painted-room" aria-label={tx("我的小屋")}>
-    <div className="painted-room__heading"><div><p className="text-[9px] tracking-[.3em] text-[var(--quiet)]">A ROOM OF ONE’S OWN</p><h2 className="mt-2 font-serif text-xl">{tx("我的小屋")} · 春水</h2></div><span className="text-xs text-[var(--quiet)]">{tx("点一点房间里的物件")}</span></div>
+  return <section className="painted-room" aria-label={roomTitle}>
+    <div className="painted-room__heading"><div><p className="text-[9px] tracking-[.3em] text-[var(--quiet)]">A ROOM OF ONE’S OWN</p><h2 className="mt-2 font-serif text-xl">{roomTitle} · 春水</h2></div><span className="text-xs text-[var(--quiet)]">{tx("点一点房间里的物件")}</span></div>
     <div className="painted-room__scene">
       <svg viewBox="0 0 800 520" role="img" aria-label="浅粉墙面、浅蓝月窗、远山、木书架、软榻、茶桌、唱片机与记忆柜组成的中式小屋">
         <defs>
@@ -71,13 +73,13 @@ export function MyRoomScene({ person, books, movies, images }: { person: Person;
         {wallMovie?.cover && <img key={wallMovie.cover} src={wallMovie.cover} alt={wallMovie.title} onError={e => { e.currentTarget.style.display = "none"; }} />}
       </button>
       {([{name:"窗边",left:25,top:10,width:32,height:44},{name:"书架",left:7,top:33,width:13,height:39},{name:"唱片机",left:73,top:47,width:16,height:10},{name:"桌上便签",left:34,top:70,width:23,height:12}] as const).filter(item => item.name !== "书架" || books.length === 0).map(item => <button key={item.name} type="button" className="room-hotspot" style={{left:`${item.left}%`,top:`${item.top}%`,width:`${item.width}%`,height:`${item.height}%`}} aria-label={tx(item.name)} aria-pressed={spot === item.name} onClick={() => {setSpot(item.name);setSelected(null);}} />)}
-      <Link to="/memories" className="room-hotspot" style={{left:"70%",top:"57%",width:"23%",height:"23%"}} aria-label={tx("记忆胶囊")} />
+      {!visiting && <Link to="/memories" className="room-hotspot" style={{left:"70%",top:"57%",width:"23%",height:"23%"}} aria-label={tx("记忆胶囊")} />}
     </div>
     <div className="room-collection-controls">
       <div><span>{tx("书架")} · {books.length} {tx("本")}</span>{pageCount > 1 && <span className="ml-2 inline-flex items-center gap-2"><button type="button" disabled={currentPage === 0} aria-label={tx("上一排书")} onClick={() => setBookPage(currentPage - 1)}>←</button><span>{currentPage + 1} / {pageCount}</span><button type="button" disabled={currentPage === pageCount - 1} aria-label={tx("下一排书")} onClick={() => setBookPage(currentPage + 1)}>→</button></span>}</div>
       {movies.length > 0 && <label className="flex min-w-0 items-center gap-2"><span className="shrink-0">{tx("墙上海报")}</span><select aria-label={tx("选择墙上的电影海报")} value={wallMovie?.id} onChange={e => { const movie = movies.find(m => m.id === e.target.value); if (movie) showMovie(movie); }}>{movies.map(movie => <option key={movie.id} value={movie.id}>{movie.title}</option>)}</select></label>}
     </div>
-    <div className="painted-room__spots" aria-label={tx("房间")}>{(Object.keys(details) as Spot[]).map(s => <button key={s} type="button" aria-pressed={spot === s} onClick={() => { setSpot(s); setSelected(null); }}>{tx(s)}</button>)}<Link to="/memories" className="rounded-full border border-[var(--border)] bg-[#f8ded6] px-4 py-2 text-xs">{tx("记忆胶囊")} ↗</Link></div>
-    <div className="painted-room__detail" aria-live="polite"><p className="font-serif text-base">{selected?.title || details[spot]}</p>{selected?.note && <p className="mt-2 text-sm text-[var(--quiet)]">{selected.note}</p>}{things.length > 0 && <div className="painted-room__objects">{things.map(x => <button key={x.id} onClick={() => { setSelected(x); if (spot === "小银幕") setMovieId(x.id); if (spot === "书架") setBookPage(Math.floor(books.findIndex(book => book.id === x.id) / 8)); }}>{x.src ? <img src={x.src} alt="" loading="lazy"/> : <span className="mb-2 flex h-26 items-center justify-center rounded border border-[var(--border)] bg-[#e7eff9] px-2 font-serif">{x.title}</span>}{x.title}</button>)}</div>}<Link to="/add" search={{ type:spot === "书架" ? "book" : spot === "小银幕" ? "movie" : "sentence" }} className="mt-4 inline-block text-xs text-[var(--bluegrey)]">{tx("留下生活痕迹")} ＋</Link></div>
+    <div className="painted-room__spots" aria-label={tx("房间")}>{(Object.keys(details) as Spot[]).map(s => <button key={s} type="button" aria-pressed={spot === s} onClick={() => { setSpot(s); setSelected(null); }}>{tx(s)}</button>)}{!visiting && <Link to="/memories" className="rounded-full border border-[var(--border)] bg-[#f8ded6] px-4 py-2 text-xs">{tx("记忆胶囊")} ↗</Link>}</div>
+    <div className="painted-room__detail" aria-live="polite"><p className="font-serif text-base">{selected?.title || details[spot]}</p>{selected?.note && <p className="mt-2 text-sm text-[var(--quiet)]">{selected.note}</p>}{things.length > 0 && <div className="painted-room__objects">{things.map(x => <button key={x.id} onClick={() => { setSelected(x); if (spot === "小银幕") setMovieId(x.id); if (spot === "书架") setBookPage(Math.floor(books.findIndex(book => book.id === x.id) / 8)); }}>{x.src ? <img src={x.src} alt="" loading="lazy"/> : <span className="mb-2 flex h-26 items-center justify-center rounded border border-[var(--border)] bg-[#e7eff9] px-2 font-serif">{x.title}</span>}{x.title}</button>)}</div>}{!visiting && <Link to="/add" search={{ type:spot === "书架" ? "book" : spot === "小银幕" ? "movie" : "sentence" }} className="mt-4 inline-block text-xs text-[var(--bluegrey)]">{tx("留下生活痕迹")} ＋</Link>}</div>
   </section>;
 }
