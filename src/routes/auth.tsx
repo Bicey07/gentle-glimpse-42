@@ -8,9 +8,9 @@ import { useStore } from "../lib/store";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "登录 · Quiet Space" },
+      { title: "登录 · Reverie" },
       { name: "description", content: "用邮箱登录，开始在自己的房间里留下生活痕迹。" },
-      { property: "og:title", content: "登录 · Quiet Space" },
+      { property: "og:title", content: "登录 · Reverie" },
       { property: "og:description", content: "用邮箱登录，开始在自己的房间里留下生活痕迹。" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

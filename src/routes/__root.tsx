@@ -90,16 +90,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "Quiet Space" },
-      { title: "Quiet Space · 安静的生活记录" },
+      { name: "apple-mobile-web-app-title", content: "Reverie" },
+      { title: "Reverie · 安静的生活记录" },
       { name: "description", content: "一个没有点赞、没有比较的生活记录空间。" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Quiet Space · 安静的生活记录" },
+      { property: "og:title", content: "Reverie · 安静的生活记录" },
       { property: "og:description", content: "一个没有点赞、没有比较的生活记录空间。" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Quiet Space · 安静的生活记录" },
+      { name: "twitter:title", content: "Reverie · 安静的生活记录" },
       { name: "twitter:description", content: "一个没有点赞、没有比较的生活记录空间。" },
       {
         property: "og:image",
@@ -226,7 +226,7 @@ function LocalizedMetadata() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   useEffect(() => {
     document.title = tx(
-      pathname === "/auth" ? "登录 · Quiet Space" : "Quiet Space · 安静的生活记录",
+      pathname === "/auth" ? "登录 · Reverie" : "Reverie · 安静的生活记录",
     );
     const description = tx(
       pathname === "/auth"

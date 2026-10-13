@@ -1,5 +1,5 @@
-const PRECACHE = "quiet-space-precache-v2";
-const RUNTIME = "quiet-space-runtime-v2";
+const PRECACHE = "quiet-space-precache-v3";
+const RUNTIME = "quiet-space-runtime-v3";
 const PRECACHE_URLS = [
   "/offline.html",
   "/manifest.webmanifest",

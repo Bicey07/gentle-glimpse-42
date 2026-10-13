@@ -15,7 +15,7 @@ export function PageShell({ children }: { children: ReactNode }) {
         <div className="reverie-topbar mb-6 flex flex-wrap items-center justify-between gap-3">
           <Link to="/" className="reverie-wordmark" aria-label={tx("空间")}>
             <span className="reverie-seal" aria-hidden="true">栖</span>
-            <span>QUIET SPACE<small>A LITTLE ROOM FOR LIFE</small></span>
+            <span>REVERIE<small>A LITTLE ROOM FOR LIFE</small></span>
           </Link>
           <div className="flex items-center gap-2">
           <Link
